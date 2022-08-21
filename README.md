@@ -5,9 +5,10 @@
 - Linux Distributions
 
 ## How to Play?
-1. Active the **Tetris-env**.
+1. Create and Active the venv like: **Tetris-env**.
     - How?
     ```bash
+    $ python3 -m venv Tetris-env
     $ source Tetris-env/bin/activate
     ```
 2. Install Important dev-libs for portaudio.
@@ -15,9 +16,12 @@
     ```bash
     (venv) $ sudo apt-get install portaudio19-dev
     (venv) $ pip3 install -r requirements.txt
-    (venv) $ python3 tetris.py
     ```
 3. Enjoy!
+    - Run:
+    ```bash
+    (venv) $ python3 tetris.py
+    ```
 
 ## Issus:
 I fix many `Critical Bugs`, But maybe ... :)
