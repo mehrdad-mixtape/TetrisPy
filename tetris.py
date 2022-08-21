@@ -1,4 +1,13 @@
-# tetris by mehrdad-mixtape
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+
+#   GPLv3 License
+
+# Copyright (c) 2022 mehrdad
+# Developed by mehrdad-mixtape https://github.com/mehrdad-mixtape/TetrisPy
+
+# Python Version 3.8 or higher
+# Tetris
 
 from typing import Callable
 from os import kill, getpid
