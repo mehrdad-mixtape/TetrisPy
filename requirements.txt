@@ -1,0 +1,10 @@
+commonmark==0.9.1
+evdev==1.6.0
+PyAudio==0.2.12
+Pygments==2.13.0
+pynput==1.7.6
+python-xlib==0.31
+rich==12.5.1
+six==1.16.0
+typing-extensions==4.3.0
+Wave==0.0.2
