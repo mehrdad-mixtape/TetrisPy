@@ -2,7 +2,7 @@ from typing import List
 from rich.table import Table
 from itertools import cycle
 from platform import system
-from random import randint, choice
+from random import choice
 from os import system as run
 from parallel import make_thread
 from subprocess import call, DEVNULL, STDOUT
@@ -40,17 +40,11 @@ def random_shape() -> cycle:
     return queue_shape.pop(0)
 
 @make_thread(join=False)
-def music_clear():
-    call(['python3', 'playMusic.py', '1'], stderr=STDOUT, stdout=DEVNULL)
-@make_thread(join=False)
-def music_main():
-    call(['python3', 'playMusic.py', '2'], stderr=STDOUT, stdout=DEVNULL)
-@make_thread(join=False)
-def music_start():
-    call(['python3', 'playMusic.py', '3'], stderr=STDOUT, stdout=DEVNULL)
-@make_thread(join=False)
-def music_tetrisClear():
-    call(['python3', 'playMusic.py', '4'], stderr=STDOUT, stdout=DEVNULL)
+def play_music(which: int):
+    if system() == 'Linux':
+        call(['python3', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
+    elif system() == 'Windows' or system() == 'Darwin':
+        call(['python', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
 
 # define classes: -------------------------------------------
 
@@ -86,7 +80,7 @@ class SHAPE:
     def pool_shape(self, value: cycle):
         self._pool_shape = value
 
-class SHAPE_0(SHAPE):
+class SHAPE_L(SHAPE):
     def __init__(self):
         super().__init__()
         self._shape_01 = (
@@ -135,7 +129,7 @@ class SHAPE_0(SHAPE):
     def main(self) -> Shape:
         return self._shape_01
 
-class SHAPE_1(SHAPE):
+class SHAPE_J(SHAPE):
     def __init__(self):
         super().__init__()
         self._shape_11 = (
@@ -184,7 +178,7 @@ class SHAPE_1(SHAPE):
     def main(self) -> Shape:
         return self._shape_11
 
-class SHAPE_2(SHAPE):
+class SHAPE_I(SHAPE):
     def __init__(self):
         super().__init__()
         self._shape_21 = (
@@ -223,7 +217,7 @@ class SHAPE_2(SHAPE):
     def main(self) -> Shape:
         return self._shape_22
 
-class SHAPE_3(SHAPE):
+class SHAPE_S(SHAPE):
     def __init__(self):
         super().__init__()
         self._shape_31 = (
@@ -261,7 +255,7 @@ class SHAPE_3(SHAPE):
     def main(self) -> Shape:
         return self._shape_32
 
-class SHAPE_4(SHAPE):
+class SHAPE_Z(SHAPE):
     def __init__(self):
         super().__init__()
         self._shape_41 = (
@@ -299,7 +293,7 @@ class SHAPE_4(SHAPE):
     def main(self) -> Shape:
         return self._shape_42
 
-class SHAPE_5(SHAPE):
+class SHAPE_D(SHAPE):
     def __init__(self):
         super().__init__()
         self._shape_51 = (
@@ -348,7 +342,7 @@ class SHAPE_5(SHAPE):
     def main(self) -> Shape:
         return self._shape_51
 
-class SHAPE_6(SHAPE):
+class SHAPE_O(SHAPE):
     def __init__(self):
         super().__init__()
         self._shape_61 = (
@@ -466,6 +460,7 @@ class Screen:
         score_flag = False
         index_of_rows = []
         score = 0
+        xp = 1
         for row in self.__screen:
             if row[0].color == BK:
                 continue
@@ -478,10 +473,20 @@ class Screen:
             if score_flag:
                 index_of_rows.append(self.__screen.index(row))
         if len(index_of_rows) == 4:
-            music_tetrisClear()
+            xp = 4
+            play_music(3)
             sleep(0.4)
-        elif 1 <= len(index_of_rows) <= 3:
-            music_clear()
+        elif len(index_of_rows) == 3:
+            xp = 3
+            play_music(7)
+            sleep(0.4)
+        elif len(index_of_rows) == 2:
+            xp = 2
+            play_music(5)
+            sleep(0.4)
+        elif len(index_of_rows) == 1:
+            xp = 1
+            play_music(1)
             sleep(0.4)
         for i in index_of_rows:
             row = self.__screen.pop(i)
@@ -489,11 +494,11 @@ class Screen:
                 block.color = E
                 block.fill = 0
             self.__screen.insert(4, row)
-            score += 100
+            score += 100 * xp
 
         return score
 
-    def show(self, score: int=0, state: str='Play') -> str:
+    def show(self, score: int=0, state: str='Play', delay: float=0.5) -> str:
         states = {
             'Play': 'green',
             'Pause': 'yellow',
@@ -508,7 +513,7 @@ class Screen:
         screen += UR + ''.join([RL for _ in range(0, Screen.width)]) + UL + '\n'
 
         ## Create next_shape:
-        next_shape = ""
+        next_shape = "\n\n"
         for obj_shape in queue_shape:
             for row in obj_shape.main:
                 next_shape += ' ' + ''.join(['  ' if piece == E else piece for piece in row]) + '\n'
@@ -516,11 +521,11 @@ class Screen:
         
         # Create key_binds:
         key_binds = "\n\n[yellow]Key Binds:[/yellow]\n"
-        key_binds += '[red]▲ UpArrow Key:\nRotate Shape[/red]\n'
-        key_binds += '[green]▼ DownArrow Key:\nMove Down Shape[/green]\n'
-        key_binds += '[dark_orange]► RightArrow Key:\nMove Right Shape[/dark_orange]\n'
-        key_binds += '[purple]◄ LeftArrow Key:\nMove Left Shape[/purple]\n'
-        key_binds += '[blue]Space Key:\nPause Game[/blue]\n'
+        key_binds += '[red]▲ Arrow: Rotate[/red]\n'
+        key_binds += '[green]▼ Arrow: Move Down[/green]\n'
+        key_binds += '[dark_orange]► Arrow: Move Right[/dark_orange]\n'
+        key_binds += '[purple]◄ Arrow: Move Left[/purple]\n'
+        key_binds += '[blue]Space: Pause[/blue]\n'
 
         nS_Kb = next_shape + key_binds
 
@@ -529,7 +534,7 @@ class Screen:
         table.add_column("[white]TETRIS[/white]", style="cyan", no_wrap=True, justify='center')
         table.add_column("[white]Next Shape[/white]", style=states.get(state, 'white'), no_wrap=True)
         table.add_row(screen, nS_Kb)
-        table.add_row(f"Score: {score}", f"{state}")
+        table.add_row(f"Score: {score}", f"Delay: {round(delay, 2)}s\nState: {state}")
         console.print(table)
 
     def reset_shape(self) -> None:
@@ -552,4 +557,4 @@ class Screen:
 
 # define variables: -------------------------------------------
 
-ALL_SHAPES = [eval(f"SHAPE_{i}()") for i in range(0, 7)]
+ALL_SHAPES = [eval(f"SHAPE_{i}()") for i in "LJISZDO"]
