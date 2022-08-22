@@ -1,13 +1,24 @@
-from parallel import make_thread
 from pyaudio import PyAudio
 import wave, sys
 
 class Music:
     musics = {
         '1': './audios/clear.wav',
-        '2': './audios/main.wav',
-        '3': './audios/start.wav',
-        '4': './audios/tetris-clear.wav'
+        '2': './audios/start.wav',
+        '3': './audios/tetris-clear.wav',
+        '4': './audios/1.wav',
+        '5': './audios/2.wav',
+        '6': './audios/3.wav',
+        '7': './audios/4.wav',
+        '8': './audios/5.wav',
+        '9': './audios/6.wav',
+        '10': './audios/7.wav',
+        '11': './audios/8.wav',
+        '12': './audios/9.wav',
+        '13': './audios/10.wav',
+        '14': './audios/11.wav',
+        '15': './audios/12.wav',
+        '16': './audios/13.wav',
     }
 
     def __init__(self):
