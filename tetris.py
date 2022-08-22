@@ -9,18 +9,22 @@
 # Python Version 3.8 or higher
 # Tetris
 
-from typing import Callable
+__repo__ = "https://github.com/mehrdad-mixtape/TetrisPy"
+__version__ = "0.1.2v"
+
 from os import kill, getpid
 from time import sleep
+from random import randint
 from pynput import keyboard
 from signal import SIGTERM
 from base import *
 
 button = ""
-delay = 0.2
-
-__repo__ = "https://github.com/mehrdad-mixtape/TetrisPy"
-__version__ = "0.1.0v"
+delay = 0.5
+prev_score = 0
+MIN_SCORE_TO_CHANGE_DELAY = 3000
+MIN_RANDOM_Y_LOC = 1
+DEFAULT_X_LOC = 0
 
 class Tetris:
     screen: Screen = None
@@ -40,7 +44,10 @@ def play_Tetris() -> bool:
     if not Tetris.screen.map_shape(Tetris.shape, Tetris.x, Tetris.y):
         Tetris.x = Screen.height
         return False
-    Tetris.screen.show(score=Tetris.score, state='Pause' if Tetris.pause else 'Play')
+    Tetris.screen.show(
+        score=Tetris.score,
+        state='Pause' if Tetris.pause else 'Play',
+        delay=delay)
     return True
 
 def update_Tetris() -> None:
@@ -56,16 +63,17 @@ def on_press(key) -> None:
     button = ""
 
 def event_handler() -> None:
-    if button == 'Key.up':
+    if button == 'Key.up': # rotate shape
+        play_music(6)
         new_shape = rotate(Tetris.shapes)
 
-        temp_x = len(new_shape) + Tetris.x
-        temp_y = len(new_shape[0]) + Tetris.y
+        temp_x = len(new_shape) - 1 + Tetris.x
+        temp_y = len(new_shape[0]) - 1 + Tetris.y
 
         ## Check button and right side of screen:
         # 1. if I close to down side and rotate my shape, I must change my x loc to control my distance.
         if temp_x >= Tetris.limit_x:
-            Tetris.x -= temp_x - Tetris.limit_x
+            Tetris.x -= temp_x - Tetris.limit_x - 1
         # 2. if close to right side and rotate my shape, I must change my y loc to control my distance.
         if temp_y >= Tetris.limit_y:
             Tetris.y -= temp_y - Tetris.limit_y - 1
@@ -75,33 +83,61 @@ def event_handler() -> None:
             Tetris.shape = new_shape
         else:
             Tetris.delay = 0.01
-    elif button == 'Key.down':
+    elif button == 'Key.down': # move down shape
+        play_music(13)
         Tetris.delay = 0.02
-    elif button == 'Key.left':
+    elif button == 'Key.left': # move left shape
+        play_music(14)
         if Tetris.y - 1 >= 0:
             if Tetris.screen.map_shape(Tetris.shape, Tetris.x, Tetris.y - 1):
                 Tetris.y -= 1
-    elif button == 'Key.right':
+    elif button == 'Key.right': # move right shape
+        play_music(14)
         if Tetris.y + 1 <= Tetris.limit_y:
             if Tetris.screen.map_shape(Tetris.shape, Tetris.x, Tetris.y + 1):
                 Tetris.y += 1
-    elif button == 'Key.space':
+    elif button == 'Key.space': # pause game
         if Tetris.pause: Tetris.pause = False
-        else: Tetris.pause = True
-        
+        else:
+            play_music(9)
+            Tetris.pause = True
+
+def change_delay() -> None:
+    global prev_score
+    global delay
+    if Tetris.score - prev_score >= MIN_SCORE_TO_CHANGE_DELAY:
+        play_music(10)
+        if delay < 0.2:
+            delay -= 0.01
+        else:
+            delay -= 0.1
+        prev_score = Tetris.score
+
 def main() -> None:
+    global delay
     clear_screen(default=3)
-    console.print("[white]Welcome to Tetris[/white]\nPress any key to startDev\nBy mehrdad-mixtape")
-    music_start()
-    input()
+    console.print("""
+    [white]Welcome to Tetris[/white]
+    Dev By mehrdad-mixtape
+    Set Game-delay[0.1s - 1.0s]""")
+    play_music(2)
+
+    try:
+        arg = float(input("\n\t(default=0.5s): "))
+        if arg > 1.0 or arg <= 0.0: delay = 0.5
+        if 0.1 <= arg <= 1.0: delay = arg
+    except ValueError:
+        delay = 0.5
+
+
     with Screen() as screen:
         with keyboard.Listener(on_press=on_press):
             Tetris.delay = delay
             Tetris.shapes = random_shape()
             Tetris.shape = rotate(Tetris.shapes)
             update_Tetris()
-            Tetris.x = 0
-            Tetris.y = randint(0, Tetris.limit_y - 1)
+            Tetris.x = DEFAULT_X_LOC
+            Tetris.y = randint(MIN_RANDOM_Y_LOC, Tetris.limit_y - MIN_RANDOM_Y_LOC)
             while not screen.is_full:
                 Tetris.screen = screen
                 update_Tetris()
@@ -112,16 +148,18 @@ def main() -> None:
                 if Tetris.x < Tetris.limit_x:
                     Tetris.x += 1
                 else:
+                    play_music(16)
                     Tetris.score += Tetris.screen.calc_score()
+                    change_delay()
                     Tetris.shapes = random_shape()
                     Tetris.shape = rotate(Tetris.shapes)
                     update_Tetris()
                     Tetris.delay = delay
-                    Tetris.x = 0
-                    Tetris.y = randint(0, Tetris.limit_y - 1)
+                    Tetris.x = DEFAULT_X_LOC
+                    Tetris.y = randint(MIN_RANDOM_Y_LOC, Tetris.limit_y - MIN_RANDOM_Y_LOC)
                     Tetris.screen.reset_shape()
-
-    Tetris.screen.show(Tetris.score, 'Game Over!')
+    play_music(15)
+    Tetris.screen.show(score=Tetris.score, state='Game Over!', delay=Tetris.delay)
 
 if __name__ == '__main__':
     try:
