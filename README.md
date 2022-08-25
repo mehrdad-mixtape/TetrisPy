@@ -1,6 +1,6 @@
 # TetrisPy
 - Funny Old School Tetris With `Python`, Let's Play!
-
+![image](https://github.com/mehrdad-mixtape/TetrisPy/blob/master/index.png)
 ## Platforms:
 - Linux
 - Windows (sound effects maybe don't work)
@@ -22,7 +22,7 @@
     ```
 
 ## Issus:
-I fix many `Critical Bugs`, But maybe ... :)
+I fixed many `Critical Bugs`, But maybe ... :)
 - I made it in ***5 days*** on my free time! Just for Fun.
 
 ## TODO:
@@ -30,6 +30,6 @@ I fix many `Critical Bugs`, But maybe ... :)
 - [ ] **shape generator** is so dumb
 - [ ] **tui** is not complete
 - [x] **delay** can't change automatically
-- [ ] **levels** aren't implemented
+- [x] **levels** aren't implemented
 - [ ] **comments** aren't complete
 - ...
