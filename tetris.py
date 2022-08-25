@@ -10,7 +10,7 @@
 # Tetris
 
 __repo__ = "https://github.com/mehrdad-mixtape/TetrisPy"
-__version__ = "0.1.2v"
+__version__ = "0.1.7v"
 
 from os import kill, getpid
 from time import sleep
@@ -22,9 +22,6 @@ from base import *
 button = ""
 delay = 0.5
 prev_score = 0
-MIN_SCORE_TO_CHANGE_DELAY = 3000
-MIN_RANDOM_Y_LOC = 1
-DEFAULT_X_LOC = 0
 
 class Tetris:
     screen: Screen = None
@@ -39,15 +36,18 @@ class Tetris:
     delay = None
     score = 0
     pause = False
+    level = 1
 
 def play_Tetris() -> bool:
+    clear_screen(default=4)
     if not Tetris.screen.map_shape(Tetris.shape, Tetris.x, Tetris.y):
         Tetris.x = Screen.height
         return False
-    Tetris.screen.show(
+    Tetris.screen.draw(
         score=Tetris.score,
         state='Pause' if Tetris.pause else 'Play',
-        delay=delay)
+        level=Tetris.level
+    )
     return True
 
 def update_Tetris() -> None:
@@ -55,34 +55,62 @@ def update_Tetris() -> None:
     Tetris.limit_x = Screen.height - Tetris.limit_h
     Tetris.limit_y = Screen.width - Tetris.limit_w
 
-def on_press(key) -> None:
-    global button
-    button = f"{key}"
-    event_handler()
-    play_Tetris()
-    button = ""
+def levelUp_Tetris() -> None:
+    global prev_score
+    global delay
+    if Tetris.score - prev_score >= MIN_SCORE_TO_CHANGE_DELAY:
+        play_music(10)
+        if delay < 0.2:
+            delay -= 0.02
+            Tetris.level += 1
+        else:
+            delay -= 0.05
+            Tetris.level += 1
+        prev_score = Tetris.score
+
+def pause_Tetris() -> None:
+    while Tetris.pause:
+        sleep(1)
 
 def event_handler() -> None:
     if button == 'Key.up': # rotate shape
         play_music(6)
         new_shape = rotate(Tetris.shapes)
-
-        temp_x = len(new_shape) - 1 + Tetris.x
-        temp_y = len(new_shape[0]) - 1 + Tetris.y
+        new_limit_h, new_limit_w = len(new_shape), len(new_shape[0])
+        new_limit_x = Screen.height - new_limit_h
+        new_limit_y = Screen.width - new_limit_w
+    
+        temp_x = new_limit_h + Tetris.x
+        temp_y = new_limit_w + Tetris.y
 
         ## Check button and right side of screen:
-        # 1. if I close to down side and rotate my shape, I must change my x loc to control my distance.
+        # 1. if I close to button and rotate my shape, I must change my x loc.
+        # if temp_x >= Tetris.limit_x:
+        #     Tetris.x -= temp_x - Tetris.limit_x
         if temp_x >= Tetris.limit_x:
-            Tetris.x -= temp_x - Tetris.limit_x - 1
-        # 2. if close to right side and rotate my shape, I must change my y loc to control my distance.
-        if temp_y >= Tetris.limit_y:
-            Tetris.y -= temp_y - Tetris.limit_y - 1
+            Tetris.x = temp_x - new_limit_h - 1
+        # 2. if I close to right wall and rotate my shape, I must change my y loc.
+        # if temp_y >= Tetris.limit_y:
+        #     Tetris.y -= temp_y - Tetris.limit_y
+        if Tetris.y == Tetris.limit_y:
+            Tetris.y = new_limit_y
+        
+        elif Tetris.y == Tetris.limit_y - 1:
+            Tetris.y = new_limit_y - 1
+
+        elif Tetris.y == Tetris.limit_y - 2:
+            Tetris.y = new_limit_y - 2
 
         ## Check the location of new_shape that wanna map on screen.
+        ## When shape close to walls or button.
         if Tetris.screen.map_shape(new_shape, Tetris.x, Tetris.y):
             Tetris.shape = new_shape
-        else:
-            Tetris.delay = 0.01
+        else: # When shape close to other shapes.
+            Tetris.x = temp_x - new_limit_h
+            Tetris.y = temp_y - new_limit_w
+            Tetris.screen.map_shape(Tetris.shape, Tetris.x, Tetris.y)
+        update_Tetris()
+
     elif button == 'Key.down': # move down shape
         play_music(13)
         Tetris.delay = 0.02
@@ -102,33 +130,30 @@ def event_handler() -> None:
             play_music(9)
             Tetris.pause = True
 
-def change_delay() -> None:
-    global prev_score
-    global delay
-    if Tetris.score - prev_score >= MIN_SCORE_TO_CHANGE_DELAY:
-        play_music(10)
-        if delay < 0.2:
-            delay -= 0.01
-        else:
-            delay -= 0.1
-        prev_score = Tetris.score
+def on_press(key) -> None:
+    global button
+    button = f"{key}"
+    event_handler()
+    play_Tetris()
+    button = ""
 
 def main() -> None:
     global delay
-    clear_screen(default=3)
+    clear_screen(default=1)
     console.print("""
     [white]Welcome to Tetris[/white]
     Dev By mehrdad-mixtape
-    Set Game-delay[0.1s - 1.0s]""")
+    Level:[1-10]""")
     play_music(2)
 
     try:
-        arg = float(input("\n\t(default=0.5s): "))
-        if arg > 1.0 or arg <= 0.0: delay = 0.5
-        if 0.1 <= arg <= 1.0: delay = arg
+        arg = int(input("\n\t(default: level 1)? "))
+        if arg > 11 or arg <= 0: delay = 0.5
+        if 1 <= arg <= 10:
+            delay = LEVELS[arg]
+            Tetris.level = arg
     except ValueError:
         delay = 0.5
-
 
     with Screen() as screen:
         with keyboard.Listener(on_press=on_press):
@@ -139,27 +164,32 @@ def main() -> None:
             Tetris.x = DEFAULT_X_LOC
             Tetris.y = randint(MIN_RANDOM_Y_LOC, Tetris.limit_y - MIN_RANDOM_Y_LOC)
             while not screen.is_full:
+                (lambda pause: pause_Tetris() if pause else None)(Tetris.pause)
                 Tetris.screen = screen
                 update_Tetris()
                 play_Tetris()
+                # print(Tetris.limit_h, Tetris.limit_w, Tetris.y, Tetris.limit_y)
                 sleep(Tetris.delay)
-                while Tetris.pause:
-                    sleep(Tetris.delay) # pause game
                 if Tetris.x < Tetris.limit_x:
                     Tetris.x += 1
                 else:
                     play_music(16)
                     Tetris.score += Tetris.screen.calc_score()
-                    change_delay()
+                    Tetris.score += SCORE_FOR_EACH_SHAPE
+                    levelUp_Tetris()
                     Tetris.shapes = random_shape()
                     Tetris.shape = rotate(Tetris.shapes)
                     update_Tetris()
                     Tetris.delay = delay
                     Tetris.x = DEFAULT_X_LOC
                     Tetris.y = randint(MIN_RANDOM_Y_LOC, Tetris.limit_y - MIN_RANDOM_Y_LOC)
-                    Tetris.screen.reset_shape()
+                    Tetris.screen.reset_prev_mapped()
     play_music(15)
-    Tetris.screen.show(score=Tetris.score, state='Game Over!', delay=Tetris.delay)
+    Tetris.screen.draw(
+        score=Tetris.score,
+        state='Game Over!',
+        level=Tetris.level
+    )
 
 if __name__ == '__main__':
     try:
