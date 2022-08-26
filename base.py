@@ -1,12 +1,11 @@
-from typing import Callable, List
+from typing import Callable, List, Any
 from rich.table import Table
-from itertools import cycle
 from platform import system
 from random import choice
 from os import system as run
-from parallel import make_thread
-from subprocess import call, DEVNULL, STDOUT
-from time import sleep
+from subprocess import DEVNULL, STDOUT, Popen
+from time import sleep, time
+from playMusic import duration_music
 from tetrisTypes_and_settings import *
 
 # define functions: -------------------------------------------
@@ -26,7 +25,7 @@ def clear_screen(default: int=1) -> None:
     elif default == 3:
         console.clear()
     elif default == 4:
-        call(['./tools/clear_screen'])
+        Popen(['./tools/clear_screen'])
     else:
         raise ValueError('default = 1 or 2 or 3 or 4')
 
@@ -41,23 +40,26 @@ def random_shape() -> cycle:
             break
     return queue_shape.pop(0)
 
-def silent_music(silent: bool):
+def silent_music(silent: bool) -> Callable:
     def __decorator__(func: Callable):
-        def __wrapper__(music_number: int) -> None:
+        def __wrapper__(music_number: int) -> Any:
             if silent:
                 return
             else:
-                func(music_number)
+                return func(music_number)
         return __wrapper__
     return __decorator__
 
-@make_thread(join=False)
+# @make_thread(join=False)
 @silent_music(OFF)
-def play_music(which: int):
+def play_music(which: int) -> int:
+    proc: Popen = None
     if system() in 'Linux Darwin':
-        call(['python3', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
+        proc = Popen(['python3', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
     elif system() == 'Windows':
-        call(['python', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
+        proc = Popen(['python', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
+    
+    return proc.pid, duration_music(which)
 
 # define classes: -------------------------------------------
 
@@ -200,13 +202,13 @@ class SHAPE_I(SHAPE):
     def __init__(self):
         super().__init__()
         self._shape_21 = (
-            (BW,),
-            (BW,),
-            (BW,),
-            (BW,),
+            (BC,),
+            (BC,),
+            (BC,),
+            (BC,),
         )
         self._shape_22 = (
-            (BW, BW, BW, BW,),
+            (BC, BC, BC, BC,),
         )
         self.pool_shape = cycle(
             (
@@ -457,7 +459,7 @@ class Screen:
                         continue
 
     def __shape_check_around(self, shape: Shape, loc_x: int, loc_y: int) -> bool:
-        """ Check around of shape that wanna close to other shapes or walls or button."""
+        """ Check around of shape that wanna close to other shapes or walls or button """
         flag = True
         for i, row in enumerate(shape):
             for j, col in enumerate(row):
@@ -467,11 +469,14 @@ class Screen:
                         # Other shapes maybe fill loc_x + i and loc_y + j
                         if self.__screen[loc_x + i][loc_y + j].fill:
                             flag = False
+                            break
                     except IndexError:
                         flag = False
+                        break
         return flag
 
-    def __check_screen(self) -> None:
+    def __check_screen_is_full(self) -> None:
+        """ Check Screen, if this was full, game is over! """
         counter = 0
         for row in self.__screen:
             for col in row:
@@ -500,13 +505,13 @@ class Screen:
 
         if num_of_rows:
             if num_of_rows == 4:
-                xp = 4; play_music(3)
+                xp = 4; play_music(6)
             elif num_of_rows == 3:
-                xp = 3; play_music(7)
+                xp = 3; play_music(5)
             elif num_of_rows == 2:
-                xp = 2; play_music(5)
+                xp = 2; play_music(4)
             elif num_of_rows == 1:
-                xp = 1; play_music(1)
+                xp = 1; play_music(3)
             for i in index_of_rows:
                 row = self.__screen.pop(i)
                 for block in row:
@@ -517,11 +522,29 @@ class Screen:
             sleep(0.2)
         return score
 
-    def draw(self, score: int=0, state: str='Play', level: int=0) -> str:
+    def dead(self, *game_arg) -> None:
+        """ Funny demo after game over """
+        play_music(7)
+        for row in self.__screen:
+            for block in row:
+                if block.color == BK:
+                    continue
+                block.color = BW
+            clear_screen(default=4)
+            self.draw(
+                current_score=game_arg[0],
+                prev_score=game_arg[1],
+                state=GAME_OVER,
+                level=game_arg[2]
+            )
+            sleep(0.2)
+
+    def draw(self, current_score: int=0, prev_score: int=0, state: str='Play', level: int=0) -> str:
+        """ Draw screen """
         states = {
-            'Play': 'green',
-            'Pause': 'yellow',
-            'Game Over!': 'red',
+            PLAY: 'green',
+            PAUSE: 'yellow',
+            GAME_OVER: 'red',
         }
         ## Create screen:
         screen = ""
@@ -539,39 +562,43 @@ class Screen:
             next_shape += '\n'
         
         # Create key_binds:
-        key_binds = "\n\n[yellow]Key Binds:[/yellow]\n"
+        key_binds = "\n\n[white]Key Binds:[/white]\n"
         key_binds += '[red]▲ Arrow: Rotate[/red]\n'
         key_binds += '[green]▼ Arrow: Move Down[/green]\n'
         key_binds += '[dark_orange]► Arrow: Move Right[/dark_orange]\n'
         key_binds += '[purple]◄ Arrow: Move Left[/purple]\n'
         key_binds += '[blue]Space: Pause[/blue]\n'
+        key_binds += '[yellow]Enter: Change Music[/yellow]\n'
 
         nS_Kb = next_shape + key_binds
 
+        remain_score_to_next_level = f"Next Level After: {MIN_SCORE_TO_LEVEL_UP - (current_score - prev_score)}"
         ## Create table:
         table = Table()
         table.add_column("[white]TETRIS[/white]", style="cyan", no_wrap=True, justify='center')
         table.add_column("[white]Next Shape[/white]", style=states.get(state, 'white'), no_wrap=True)
         table.add_row(screen, nS_Kb)
-        table.add_row(f"Score: {score}", f"Level: {round(level, 2)}\nState: {state}")
+        table.add_row(f"Score: {current_score}\n{remain_score_to_next_level}", f"Level: {level}\nState: {state}")
         console.print(table)
 
     def reset_prev_mapped(self) -> None:
+        """ Reset previous shape that was mapped """
         self.__prev_mapped = ()
 
     def map_shape(self, shape: Shape, loc_x: int, loc_y: int) -> bool:
+        """ Map shape on screen if was possible on loc_x & loc_y """
         self.__shape_cleaner()
 
         if not self.__shape_check_around(shape, loc_x, loc_y):
             self.__shape_mapper(self.__prev_mapped, self.__prev_loc_x, self.__prev_loc_y)
-            self.__check_screen()
+            self.__check_screen_is_full()
             return False
         else:
             self.__shape_mapper(shape, loc_x, loc_y)
             self.__prev_mapped = shape
             self.__prev_loc_x = loc_x
             self.__prev_loc_y = loc_y
-            self.__check_screen()
+            self.__check_screen_is_full()
             return True
 
 # define variables: -------------------------------------------
