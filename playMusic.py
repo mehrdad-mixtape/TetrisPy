@@ -3,29 +3,34 @@ import wave, sys
 
 class Music:
     musics = {
-        '1': './audios/clear.wav',
-        '2': './audios/start.wav',
-        '3': './audios/tetris-clear.wav',
-        '4': './audios/1.wav',
-        '5': './audios/2.wav',
-        '6': './audios/3.wav',
-        '7': './audios/4.wav',
-        '8': './audios/5.wav',
-        '9': './audios/6.wav',
-        '10': './audios/7.wav',
-        '11': './audios/8.wav',
-        '12': './audios/9.wav',
-        '13': './audios/10.wav',
-        '14': './audios/11.wav',
-        '15': './audios/12.wav',
-        '16': './audios/13.wav',
+        '1': './audios/Opening1.wav',
+        '2': './audios/Opening2.wav',
+        '3': './audios/Row-Clear1.wav',
+        '4': './audios/Row-Clear2.wav',
+        '5': './audios/Row-Clear3.wav',
+        '6': './audios/Tetris-Clear.wav',
+        '7': './audios/Ending.wav',
+        '8': './audios/Game-Over.wav',
+        '9': './audios/Mapping.wav',
+        '10': './audios/Move-Down.wav',
+        '11': './audios/Move-RL.wav',
+        '12': './audios/Rotate-Shape.wav',
+        '13': './audios/Pause.wav',
+        '14': './audios/Stage-Clear1.wav',
+        '15': './audios/Stage-Clear2.wav',
+        '15': './audios/TypeA.wav',
+        '16': './audios/TypeB.wav',
+        '17': './audios/TypeC.wav',
+        '18': './audios/TypeD.wav',
+        '19': './audios/TypeE.wav',
+        '20': './audios/TypeF.wav',
     }
 
     def __init__(self):
         self.__chunk = 1024 # length of data to read.
         self.__audio = PyAudio() # create audio object.
 
-    def play(self, music_path: str):
+    def play(self, music_path: str) -> None:
         with wave.open(music_path, mode='rb') as wf:
             # open stream based on the wave object which has been input.
             stream = self.__audio.open(
@@ -46,6 +51,10 @@ class Music:
 
             # cleanup stuff.
             stream.close()
+    
+def duration_music(music_number: int) -> int:
+    with wave.open(Music.musics.get(f"{music_number}", '1')) as wf:
+        return int(wf.getnframes() // float(wf.getframerate()))
 
 def main(argv: str):
     music = Music()
