@@ -21,6 +21,12 @@
     (venv) $ python3 tetris.py
     ```
 
+## Sound Effects:
+ - Sound effects are *.wav files and have **large** size.
+ 1. You can download the all sound effect from this <a href="https://drive.google.com/file/d/1QfO3Gv5QSvyZmKgrRNVax6bBWKC4jhJG/view?usp=sharing">link</a>:
+ 2. Create a directory on project path with name: `audios`
+ 3. Copy all sound effects to audios.
+
 ## Issus:
 I fixed many `Critical Bugs`, But maybe ... :)
 - I made it in ***5 days*** on my free time! Just for Fun.
@@ -28,7 +34,7 @@ I fixed many `Critical Bugs`, But maybe ... :)
 ## TODO:
 - [x] **sound effects** aren't complete
 - [ ] **shape generator** is so dumb
-- [ ] **tui** is not complete
+- [x] **tui** is not complete
 - [x] **delay** can't change automatically
 - [x] **levels** aren't implemented
 - [ ] **comments** aren't complete
