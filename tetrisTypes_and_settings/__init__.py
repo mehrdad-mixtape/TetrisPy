@@ -1,6 +1,6 @@
 from typing import Tuple
 from rich.console import Console
-
+from itertools import cycle
 Shape = Tuple[Tuple[str]]
 
 RL = "──"
@@ -12,7 +12,8 @@ UL = "┘"
 F = "██"
 E = "▒▒"
 
-BW = f"[cyan]{F}[/cyan]"
+BW = f"[white]{F}[/white]"
+BC = f"[cyan]{F}[/cyan]"
 BY = f"[yellow]{F}[/yellow]"
 BR = f"[red]{F}[/red]"
 BB = f"[dark_blue]{F}[/dark_blue]"
@@ -27,7 +28,7 @@ L = False
 OFF = False
 ON = True
 
-MIN_SCORE_TO_CHANGE_DELAY = 3000
+MIN_SCORE_TO_LEVEL_UP = 5000
 
 MIN_RANDOM_Y_LOC = 1
 
@@ -46,10 +47,71 @@ LEVELS = {
     10: 0.05,
 }
 
-SCORE_FOR_EACH_ROW = 200
-SCORE_FOR_EACH_SHAPE = 50
+SCORE_FOR_EACH_ROW = 300
+SCORE_FOR_EACH_SHAPE = 100
 
 console = Console()
 
 queue_shape = []
 MAX_LEN_Q = 4
+
+MAIN_MUSICS = cycle([15, 16, 17, 18, 19])
+
+GAME_OVER = 'Game Over'
+PLAY = 'Play'
+PAUSE = 'Pause'
+
+BANNER = f"""
+ {BY}{BY}{BY}{BY}{BY}           {BC}           {BR}
+░░░░░{BY}░░░           ░{BC}          ░░
+    ░{BY}      {BG}{BG}{BG}  {BC}{BC}{BC} {BO}{BO}{BO} {BR}  {BP}{BP}{BP}
+    ░{BY}     {BG}░░░░{BG}░░{BC}░ ░░{BO}░░{BO}░{BR} {BP}░░░░
+    ░{BY}    ░{BG}{BG}{BG}{BG} ░{BC}   ░{BO} ░  ░{BR}░░{BP}{BP}{BP}
+    ░{BY}    ░{BG}░░░░   ░{BC}   ░{BO}    ░{BR} ░░░░░{BP}
+    ░{BY}    ░░{BG}{BG}{BG}  ░░{BC}░{BO}{BO}    ░{BR} {BP}{BP}{BP}
+    ░░      ░░░░░░    ░░  ░░░    ░░ ░░░░░░
+
+     ████████████████████████████████████
+     █▒▒▒▒▒ Dev By mehrdad-mixtape ▒▒▒▒▒█
+     ████████████████████████████████████
+
+  {BO}     {BY}{BY}   {BR}{BR}      {BB}   {BC}    {BG}{BG}  {BP}
+  {BO}     {BY}{BY}     {BR}{BR}    {BB}   {BC}  {BG}{BG}    {BP}{BP}
+  {BO}{BO}                  {BB}{BB}   {BC}          {BP}
+                               {BC}
+
+        [white]Welcome to Tetris[/white]
+        [red]Levels[/red]: 1 2 3 4 5 6 7 8 9 10
+"""
+
+THREE = f"""
+            {BW}{BW}{BW}
+                {BW}
+            {BW}{BW}{BW}
+                {BW}
+            {BW}{BW}{BW}
+"""
+
+TWO = f"""
+            {BW}{BW}{BW}
+                {BW}
+            {BW}{BW}{BW}
+            {BW}
+            {BW}{BW}{BW}
+"""
+
+ONE = f"""
+            {BW}{BW}
+              {BW}
+              {BW}
+              {BW}
+            {BW}{BW}{BW}
+"""
+
+GO = f"""
+        {BW}{BW}{BW}{BW} {BW}{BW}{BW}{BW}
+        {BW}       {BW}    {BW}
+        {BW}  {BW}{BW} {BW}    {BW}
+        {BW}    {BW} {BW}    {BW}
+        {BW}{BW}{BW}{BW} {BW}{BW}{BW}{BW}
+"""
