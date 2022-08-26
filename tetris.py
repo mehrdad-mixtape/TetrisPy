@@ -10,7 +10,7 @@
 # Tetris
 
 __repo__ = "https://github.com/mehrdad-mixtape/TetrisPy"
-__version__ = "v0.2.0"
+__version__ = "v0.2.1"
 
 from os import kill, getpid
 from random import randint
@@ -23,6 +23,7 @@ delay = 0.5
 prev_score = 0
 pid = None
 dur = None
+start_time = 0
 
 class Tetris:
     """ Class of Tetris, contain important variables of game """
@@ -138,10 +139,11 @@ def event_handler() -> None:
             Tetris.pause = True
     
     elif button == 'Key.enter':
-        global pid, dur
+        global pid, dur, start_time
         Tetris.music = next(MAIN_MUSICS)
         kill(pid, SIGTERM) # stop previous music
         pid, dur = play_music(Tetris.music) # play new music
+        start_time = time()
 
 def on_press(key) -> None:
     """ Process keyboard events """
@@ -153,7 +155,7 @@ def on_press(key) -> None:
 
 def main() -> None:
     ## Banner:
-    global delay, pid, dur
+    global delay, pid, dur, start_time
     clear_screen(default=1)
     console.print(BANNER)
     pid, dur = play_music(2)
