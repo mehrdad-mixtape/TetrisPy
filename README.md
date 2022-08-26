@@ -21,11 +21,11 @@
     (venv) $ python3 tetris.py
     ```
 
-## Sound Effects:
- - Sound effects are *.wav files and have **large** size.
- 1. You can download the all sound effect from this <a href="https://drive.google.com/file/d/1QfO3Gv5QSvyZmKgrRNVax6bBWKC4jhJG/view?usp=sharing">link</a>:
+## Audios & Sound Effects:
+ - Audios & Sound effects are *.wav files and have **large** size.
+ 1. You can download the all audios & sound effect from this <a href="https://drive.google.com/file/d/1QfO3Gv5QSvyZmKgrRNVax6bBWKC4jhJG/view?usp=sharing">link</a>:
  2. Create a directory on project path with name: `audios`
- 3. Copy all sound effects to audios.
+ 3. Extract *audios.rar* to audios.
 
 ## Issus:
 I fixed many `Critical Bugs`, But maybe ... :)
