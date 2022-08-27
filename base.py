@@ -50,7 +50,6 @@ def silent_music(silent: bool) -> Callable:
         return __wrapper__
     return __decorator__
 
-# @make_thread(join=False)
 @silent_music(OFF)
 def play_music(which: int) -> int:
     proc: Popen = None
@@ -60,6 +59,14 @@ def play_music(which: int) -> int:
         proc = Popen(['python', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
     
     return proc.pid, duration_music(which)
+
+def keyboard_lock(func: Callable) -> Callable:
+    def __decorator__(lock: bool) -> None:
+        if lock:
+            lambda: None
+        else:
+            func()
+    return __decorator__
 
 # define classes: -------------------------------------------
 
@@ -567,8 +574,9 @@ class Screen:
         key_binds += '[green]▼ Arrow: Move Down[/green]\n'
         key_binds += '[dark_orange]► Arrow: Move Right[/dark_orange]\n'
         key_binds += '[purple]◄ Arrow: Move Left[/purple]\n'
-        key_binds += '[blue]Space: Pause[/blue]\n'
-        key_binds += '[yellow]Enter: Change Music[/yellow]\n'
+        key_binds += '[yellow]Space: Pause[/yellow]\n'
+        key_binds += '[cyan]Left Ctrl: Stop Music[/cyan]\n'
+        key_binds += '[blue]Left Alt: Next Music\n\t  Play Music[/blue]\n'
 
         nS_Kb = next_shape + key_binds
 
