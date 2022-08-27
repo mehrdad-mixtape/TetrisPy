@@ -6,6 +6,9 @@
 - Windows (sound effects maybe don't work)
 - Mac (sound effects maybe don't work)
 
+## Python version:
+- 3.6 or higher
+
 ## How to Play?
 1. Create and Active the venv like: **Tetris-env**.
 2. If you have problem for install `pyaudio` or `wave` on linux:
