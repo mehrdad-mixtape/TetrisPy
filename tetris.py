@@ -10,7 +10,7 @@
 # Tetris
 
 __repo__ = "https://github.com/mehrdad-mixtape/TetrisPy"
-__version__ = "v0.2.1"
+__version__ = "v0.2.5"
 
 from os import kill, getpid
 from random import randint
@@ -24,6 +24,7 @@ prev_score = 0
 pid = None
 dur = None
 start_time = 0
+kill_music = None
 
 class Tetris:
     """ Class of Tetris, contain important variables of game """
@@ -80,8 +81,10 @@ def pause_Tetris() -> None:
     while Tetris.pause:
         sleep(1)
 
+@keyboard_lock
 def event_handler() -> None:
     """ Handle keyboard events """
+    global kill_music, pid, dur, start_time
     if button == 'Key.up': # rotate shape
         play_music(12)
         new_shape = rotate(Tetris.shapes)
@@ -132,30 +135,39 @@ def event_handler() -> None:
         if Tetris.y + 1 <= Tetris.limit_y:
             if Tetris.screen.map_shape(Tetris.shape, Tetris.x, Tetris.y + 1):
                 Tetris.y += 1
-    elif button == 'Key.space': # pause game
-        if Tetris.pause: Tetris.pause = False
-        else:
-            play_music(13)
-            Tetris.pause = True
     
-    elif button == 'Key.enter':
-        global pid, dur, start_time
+    elif button == 'Key.alt':
         Tetris.music = next(MAIN_MUSICS)
-        kill(pid, SIGTERM) # stop previous music
+        if not kill_music: kill(pid, SIGTERM) # stop previous music
         pid, dur = play_music(Tetris.music) # play new music
         start_time = time()
+        kill_music = False
+    
+    elif button == 'Key.ctrl' and not kill_music:
+        kill(pid, SIGTERM)
+        kill_music = True
+        pid = -1
+        dur = -1
+        start_time = 0
 
 def on_press(key) -> None:
     """ Process keyboard events """
     global button
     button = f"{key}"
-    event_handler()
+    if button == 'Key.space': # pause game
+        if Tetris.pause:
+            Tetris.pause = False
+        else:
+            play_music(13)
+            Tetris.pause = True
+    event_handler(Tetris.pause) # lock keyboard when game is pause.
     play_Tetris()
     button = ""
 
 def main() -> None:
     ## Banner:
-    global delay, pid, dur, start_time
+    global delay, pid, dur, start_time, kill_music
+    kill_music = False
     clear_screen(default=1)
     console.print(BANNER)
     pid, dur = play_music(2)
@@ -171,7 +183,7 @@ def main() -> None:
     print('\n\n')
     for B in (THREE, TWO, ONE, GO):
         console.print(B)
-        sleep(1)
+        sleep(0.5)
 
     ## Start game:
     Tetris.music = next(MAIN_MUSICS)
@@ -205,12 +217,12 @@ def main() -> None:
                     Tetris.x = DEFAULT_X_LOC
                     Tetris.y = randint(MIN_RANDOM_Y_LOC, Tetris.limit_y - MIN_RANDOM_Y_LOC)
                     Tetris.screen.reset_prev_mapped()
-                if time() - start_time >= dur: # play next music.
+                if time() - start_time >= dur and not kill_music: # play next music.
                     Tetris.music = next(MAIN_MUSICS)
                     pid, dur = play_music(Tetris.music)
                     start_time = time()
             else:
-                kill(pid, SIGTERM) # stop music.
+                if not kill_music: kill(pid, SIGTERM) # stop music.
                 pid, dur = play_music(8) # game over music.
                 Tetris.screen.draw(
                     current_score=Tetris.score,
