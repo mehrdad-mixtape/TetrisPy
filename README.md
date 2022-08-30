@@ -1,6 +1,8 @@
 # TetrisPy
 - Funny Old School Tetris With `Python`, Let's Play!
+## Interview:
 ![image](https://github.com/mehrdad-mixtape/TetrisPy/blob/master/index.png)
+
 ## Platforms:
 - Linux
 - Windows (sound effects maybe don't work)
@@ -23,6 +25,9 @@
     ```bash
     (venv) $ python3 tetris.py
     ```
+
+## Game:
+![image](https://github.com/mehrdad-mixtape/TetrisPy/blob/master/index2.png)
 
 ## Audios & Sound Effects:
  - Audios & Sound effects are *.wav files and have **large** size.
