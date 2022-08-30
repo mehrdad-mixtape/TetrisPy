@@ -35,10 +35,11 @@ I fixed many `Critical Bugs`, But maybe ... :)
 - I made it in ***5 days*** on my free time! Just for Fun.
 
 ## TODO:
+- [x] **clean code**
 - [x] **sound effects** aren't complete
 - [ ] **shape generator** is so dumb
 - [x] **tui** is not complete
 - [x] **delay** can't change automatically
 - [x] **levels** aren't implemented
-- [ ] **comments** aren't complete
+- [x] **comments** aren't complete
 - ...
