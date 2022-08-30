@@ -1,22 +1,17 @@
-from typing import Callable, List, Any
+from typing import Callable, List, Tuple, Any
 from rich.table import Table
 from platform import system
 from random import choice
 from os import system as run
 from subprocess import DEVNULL, STDOUT, Popen
-from time import sleep, time
+from time import sleep
 from playMusic import duration_music
 from tetrisTypes_and_settings import *
 
 # define functions: -------------------------------------------
 
-def show_shape(shape: Shape) -> None:
-    out = ''
-    for row in shape:
-        out += ''.join(['  ' if piece == E else piece for piece in row]) + '\n'
-    console.print(out)
-
 def clear_screen(default: int=1) -> None:
+    """ Four methods for clear the terminal """
     if default == 1:
         if system() in 'Linux Darwin': run('clear')
         elif system() == 'Windows': run('cls')
@@ -29,10 +24,8 @@ def clear_screen(default: int=1) -> None:
     else:
         raise ValueError('default = 1 or 2 or 3 or 4')
 
-def rotate(cycle_shape: cycle) -> Shape:
-    return next(cycle_shape)
-
-def random_shape() -> cycle:
+def random_shape() -> Shape:
+    """ Get random shape from queue """
     for _ in range(0, MAX_LEN_Q):
         if len(queue_shape) != MAX_LEN_Q:
             queue_shape.append(choice(ALL_SHAPES))
@@ -40,27 +33,22 @@ def random_shape() -> cycle:
             break
     return queue_shape.pop(0)
 
-def silent_music(silent: bool) -> Callable:
-    def __decorator__(func: Callable):
-        def __wrapper__(music_number: int) -> Any:
-            if silent:
-                return
-            else:
-                return func(music_number)
-        return __wrapper__
-    return __decorator__
-
-@silent_music(OFF)
-def play_music(which: int) -> int:
+def play_music(which: int) -> Tuple[int]:
+    """ Play musics on the background """
     proc: Popen = None
     if system() in 'Linux Darwin':
         proc = Popen(['python3', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
     elif system() == 'Windows':
         proc = Popen(['python', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
     
-    return proc.pid, duration_music(which)
+    return (proc.pid, duration_music(which))
+
+def next_music() -> int:
+    """ Get next music number for playing """
+    return next(MAIN_MUSICS)
 
 def keyboard_lock(func: Callable) -> Callable:
+    """ Lock keyboard events """
     def __decorator__(lock: bool) -> None:
         if lock:
             lambda: None
@@ -70,348 +58,15 @@ def keyboard_lock(func: Callable) -> Callable:
 
 # define classes: -------------------------------------------
 
-class Block:
-    """ Screen of Tetris filled with Blocks """
-    def __init__(self, color: str=E, fill: int=0):
-        self.color = color
-        self._fill = fill
-
-    @property
-    def fill(self) -> int:
-        return self._fill
-    
-    @fill.setter
-    def fill(self, value: int) -> None:
-        self._fill = value
-
-class SHAPE:
-    """ Father of All-Shapes, All rotations of shapes store on 'cycle' data-structure """
-    def __init__(self):
-        self._pool_shape: cycle = None
-
-    def __iter__(self):
-        return self.pool_shape
-
-    def __next__(self):
-        for shape in self.pool_shape:
-            return shape
-
-    @property
-    def pool_shape(self):
-        return self._pool_shape
-    
-    @pool_shape.setter
-    def pool_shape(self, value: cycle):
-        self._pool_shape = value
-
-class SHAPE_L(SHAPE):
-    """ Shape L with 4 rotation """
-    def __init__(self):
-        super().__init__()
-        self._shape_01 = (
-            (BO, BO, BO,),
-            (BO, E, E,),
-        )
-        self._shape_02 = (
-            (BO, BO),
-            (E, BO),
-            (E, BO),
-        )
-        self._shape_03 = (
-            (E, E, BO,),
-            (BO, BO, BO,),
-        )
-        self._shape_04 = (
-            (BO, E,),
-            (BO, E,),
-            (BO, BO,),
-        )
-        self.pool_shape = cycle(
-            (
-                self._shape_01,
-                self._shape_02,
-                self._shape_03,
-                self._shape_04,
-            )
-        )
-        self._weight = 5
-
-    def __str__(self):
-        return """
-        Shape L:
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        ▒▒██████▒▒████▒▒▒▒▒▒██▒▒██▒▒▒▒
-        ▒▒██▒▒▒▒▒▒▒▒██▒▒██████▒▒██▒▒▒▒
-        ▒▒▒▒▒▒▒▒▒▒▒▒██▒▒▒▒▒▒▒▒▒▒████▒▒
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        """
-
-    @property
-    def weight(self) -> int:
-        return self._weight
-    
-    @property
-    def main(self) -> Shape:
-        return self._shape_01
-
-class SHAPE_J(SHAPE):
-    """ Shape J with 4 rotation """
-    def __init__(self):
-        super().__init__()
-        self._shape_11 = (
-            (BB, E, E,),
-            (BB, BB, BB,),
-        )
-        self._shape_12 = (
-            (BB, BB,),
-            (BB, E,),
-            (BB, E,),
-        )
-        self._shape_13 = (
-            (BB, BB, BB,),
-            (E, E, BB,),
-        )
-        self._shape_14 = (
-            (E, BB,),
-            (E, BB,),
-            (BB, BB,),
-        )
-        self.pool_shape = cycle(
-            (
-                self._shape_11,
-                self._shape_12,
-                self._shape_13,
-                self._shape_14,
-            )
-        )
-        self._weight = 5
-
-    def __str__(self):
-        return """
-        Shape J:
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        ▒▒██▒▒▒▒▒▒████▒▒██████▒▒▒▒██▒▒
-        ▒▒██████▒▒██▒▒▒▒▒▒▒▒██▒▒▒▒██▒▒
-        ▒▒▒▒▒▒▒▒▒▒██▒▒▒▒▒▒▒▒▒▒▒▒████▒▒
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        """
-
-    @property
-    def weight(self):
-        return self._weight
-    
-    @property
-    def main(self) -> Shape:
-        return self._shape_11
-
-class SHAPE_I(SHAPE):
-    """ Shape I with 2 rotation """
-    def __init__(self):
-        super().__init__()
-        self._shape_21 = (
-            (BC,),
-            (BC,),
-            (BC,),
-            (BC,),
-        )
-        self._shape_22 = (
-            (BC, BC, BC, BC,),
-        )
-        self.pool_shape = cycle(
-            (
-                self._shape_21,
-                self._shape_22,
-            )
-        )
-        self._weight = 7
-
-    def __str__(self):
-        return """
-        Shape I:
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        ▒▒██▒▒▒▒▒▒▒▒▒▒▒▒
-        ▒▒██▒▒▒▒▒▒▒▒▒▒▒▒
-        ▒▒██▒▒████████▒▒
-        ▒▒██▒▒▒▒▒▒▒▒▒▒▒▒
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        """
-
-    @property
-    def weight(self):
-        return self._weight
-    
-    @property
-    def main(self) -> Shape:
-        return self._shape_22
-
-class SHAPE_S(SHAPE):
-    """ Shape S with 2 rotation """
-    def __init__(self):
-        super().__init__()
-        self._shape_31 = (
-            (BG, E,),
-            (BG, BG,),
-            (E, BG,),
-        )
-        self._shape_32 = (
-            (E, BG, BG,),
-            (BG, BG, E,),
-        )
-        self.pool_shape = cycle(
-            (
-                self._shape_31,
-                self._shape_32,
-            )
-        )
-        self._weight = 3
-
-    def __str__(self):
-        return """
-        Shape S:
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        ▒▒██▒▒▒▒▒▒████▒▒
-        ▒▒████▒▒████▒▒▒▒
-        ▒▒▒▒██▒▒▒▒▒▒▒▒▒▒
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        """
-    
-    @property
-    def weight(self):
-        return self._weight
-    
-    @property
-    def main(self) -> Shape:
-        return self._shape_32
-
-class SHAPE_Z(SHAPE):
-    """ Shape Z with 2 rotation"""
-    def __init__(self):
-        super().__init__()
-        self._shape_41 = (
-            (E, BR,),
-            (BR, BR,),
-            (BR, E,),
-        )
-        self._shape_42 = (
-            (BR, BR, E,),
-            (E, BR, BR,),
-        )
-        self.pool_shape = cycle(
-            (
-                self._shape_41,
-                self._shape_42,
-            )
-        )
-        self._weight = 3
-
-    def __str__(self):
-        return """
-        Shape Z:
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        ▒▒▒▒██▒▒████▒▒▒▒
-        ▒▒████▒▒▒▒████▒▒
-        ▒▒██▒▒▒▒▒▒▒▒▒▒▒▒
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        """
-    
-    @property
-    def weight(self):
-        return self._weight
-    
-    @property
-    def main(self) -> Shape:
-        return self._shape_42
-
-class SHAPE_T(SHAPE):
-    """ Shape T with 4 rotation"""
-    def __init__(self):
-        super().__init__()
-        self._shape_51 = (
-            (E, BP, E,),
-            (BP, BP, BP,),
-        )
-        self._shape_52 = (
-            (BP, E,),
-            (BP, BP,),
-            (BP, E,),
-        )
-        self._shape_53 = (
-            (BP, BP, BP,),
-            (E, BP, E,),
-        )
-        self._shape_54 = (
-            (E, BP,),
-            (BP, BP,),
-            (E, BP,),
-        )
-        self.pool_shape = cycle(
-            (
-                self._shape_51,
-                self._shape_52,
-                self._shape_53,
-                self._shape_54,
-            )
-        )
-        self._weight = 4
-
-    def __str__(self):
-        return """
-        Shape T:
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        ▒▒▒▒██▒▒▒▒██▒▒▒▒██████▒▒▒▒██▒▒
-        ▒▒██████▒▒████▒▒▒▒██▒▒▒▒████▒▒
-        ▒▒▒▒▒▒▒▒▒▒██▒▒▒▒▒▒▒▒▒▒▒▒▒▒██▒▒
-        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-        """
-    
-    @property
-    def weight(self):
-        return self._weight
-    
-    @property
-    def main(self) -> Shape:
-        return self._shape_51
-
-class SHAPE_O(SHAPE):
-    """ Shape O with 1 rotation """
-    def __init__(self):
-        super().__init__()
-        self._shape_61 = (
-            (BY, BY,),
-            (BY, BY,),
-        )
-        self.pool_shape = cycle(
-            (
-                self._shape_61,
-            )
-        )
-        self._weight = 6
-
-    def __str__(self):
-        return """
-        Shape O:
-        ▒▒▒▒▒▒▒▒
-        ▒▒████▒▒
-        ▒▒████▒▒
-        ▒▒▒▒▒▒▒▒
-        """
-    
-    @property
-    def weight(self):
-        return self._weight
-    
-    @property
-    def main(self) -> Shape:
-        return self._shape_61
-
 class Screen:
     """ Screen of Tetris """
     width = 10 # 10 Columns are visible.
     height = 20 + 4 # 20 Rows are visible and 4 Rows are hidden.
+    cache = None
     def __init__(self):
         self.__prev_loc_x = 0 # Previous x location of shape on screen.
         self.__prev_loc_y = 0 # Previous y location of shape on screen.
-        self.__prev_mapped: Shape = () # Previous shape that mapped on screen.
+        self.__prev_mapped: Tuple[Tuple[str]] = () # Previous shape that mapped on screen.
         self.__screen: List[List[Block]] = [ # Append 20 Rows on screen that wanna be visible.
             [Block() for _ in range(0, Screen.width)] for _ in range(0, Screen.height - 4)
         ]
@@ -433,7 +88,7 @@ class Screen:
         """ Screen can be full if all rows fill with shapes """
         return self._is_full
 
-    def __shape_mapper(self, shape: Shape, loc_x: int, loc_y: int) -> None:
+    def __shape_mapper(self, shape: Tuple[Tuple[str]], loc_x: int, loc_y: int) -> None:
         """ Map shape on loc_x + i & loc_y + j on screen"""
         for i, row in enumerate(shape):
             for j, col in enumerate(row):
@@ -465,7 +120,7 @@ class Screen:
                     except IndexError:
                         continue
 
-    def __shape_check_around(self, shape: Shape, loc_x: int, loc_y: int) -> bool:
+    def __shape_check_around(self, shape: Tuple[Tuple[str]], loc_x: int, loc_y: int) -> bool:
         """ Check around of shape that wanna close to other shapes or walls or button """
         flag = True
         for i, row in enumerate(shape):
@@ -494,7 +149,7 @@ class Screen:
             self._is_full = True
 
     def calc_score(self) -> int:
-        """ Find rows that filled with block """
+        """ Find rows that were filled with block """
         score_flag = False
         index_of_rows = []
         num_of_rows = 0
@@ -540,25 +195,29 @@ class Screen:
             clear_screen(default=4)
             self.draw(
                 current_score=game_arg[0],
-                prev_score=game_arg[1],
-                state=GAME_OVER,
+                state=game_arg[1],
                 level=game_arg[2]
             )
             sleep(0.2)
 
-    def draw(self, current_score: int=0, prev_score: int=0, state: str='Play', level: int=0) -> str:
+    def draw(self, current_score: int=0, state: Game_state=Game_state.PLAY, level: Level=LEVELS[0], empty: bool=False) -> str:
         """ Draw screen """
         states = {
-            PLAY: 'green',
-            PAUSE: 'yellow',
-            GAME_OVER: 'red',
+            Game_state.PLAY: 'green',
+            Game_state.PAUSE: 'yellow',
+            Game_state.GAME_OVER: 'red',
         }
         ## Create screen:
         screen = ""
         screen += DR + ''.join([RL for _ in range(0, Screen.width)]) + DL + '\n'
-        for row in self.__screen:
-            if row[0].color != BK:
-                screen += UD + ''.join(block.color for block in row) + UD + '\n'
+        if empty:
+            for row in self.__screen:
+                if row[0].color != BK:
+                    screen += UD + E*len(row) + UD + '\n'
+        else:
+            for row in self.__screen:
+                if row[0].color != BK:
+                    screen += UD + ''.join(block.color for block in row) + UD + '\n'
         screen += UR + ''.join([RL for _ in range(0, Screen.width)]) + UL + '\n'
 
         ## Create next_shape:
@@ -575,25 +234,26 @@ class Screen:
         key_binds += '[dark_orange]► Arrow: Move Right[/dark_orange]\n'
         key_binds += '[purple]◄ Arrow: Move Left[/purple]\n'
         key_binds += '[yellow]Space: Pause[/yellow]\n'
-        key_binds += '[cyan]Left Ctrl: Stop Music[/cyan]\n'
+        key_binds += '[cyan]Left Shift: Stop Music[/cyan]\n'
         key_binds += '[blue]Left Alt: Next Music\n\t  Play Music[/blue]\n'
 
         nS_Kb = next_shape + key_binds
 
-        remain_score_to_next_level = f"Next Level After: {MIN_SCORE_TO_LEVEL_UP - (current_score - prev_score)}"
+        remain_score_to_next_level = f"Next Level After: {level.max_score - current_score}"
+
         ## Create table:
         table = Table()
         table.add_column("[white]TETRIS[/white]", style="cyan", no_wrap=True, justify='center')
         table.add_column("[white]Next Shape[/white]", style=states.get(state, 'white'), no_wrap=True)
         table.add_row(screen, nS_Kb)
-        table.add_row(f"Score: {current_score}\n{remain_score_to_next_level}", f"Level: {level}\nState: {state}")
+        table.add_row(f"Score: {current_score}\n{remain_score_to_next_level}", f"Level: {level.l_num + 1}\nState: {state.value}")
         console.print(table)
 
     def reset_prev_mapped(self) -> None:
         """ Reset previous shape that was mapped """
         self.__prev_mapped = ()
 
-    def map_shape(self, shape: Shape, loc_x: int, loc_y: int) -> bool:
+    def map_shape(self, shape: Tuple[Tuple[str]], loc_x: int, loc_y: int) -> bool:
         """ Map shape on screen if was possible on loc_x & loc_y """
         self.__shape_cleaner()
 
@@ -608,7 +268,3 @@ class Screen:
             self.__prev_loc_y = loc_y
             self.__check_screen_is_full()
             return True
-
-# define variables: -------------------------------------------
-
-ALL_SHAPES = [eval(f"SHAPE_{char}()") for char in "LJISZTO"]
