@@ -1,3 +1,4 @@
+from operator import index
 from typing import Callable, List, Tuple, Any
 from rich.table import Table
 from platform import system
@@ -209,22 +210,26 @@ class Screen:
         }
         ## Create screen:
         screen = ""
-        screen += DR + ''.join([RL for _ in range(0, Screen.width)]) + DL + '\n'
+        screen += f"{DR}{''.join([RL for _ in range(0, Screen.width)])}{DL}\n"
         if empty:
             for row in self.__screen:
                 if row[0].color != BK:
-                    screen += UD + E*len(row) + UD + '\n'
+                    if self.__screen.index(row) == 13:
+                        screen += f"{UD}{E}{'     #PAUSE     '}{E}{UD}\n"
+                    else:
+                        screen += f"{UD}{E * len(row)}{UD}\n"
         else:
             for row in self.__screen:
                 if row[0].color != BK:
-                    screen += UD + ''.join(block.color for block in row) + UD + '\n'
-        screen += UR + ''.join([RL for _ in range(0, Screen.width)]) + UL + '\n'
+                    screen += f"{UD}{''.join(block.color for block in row)}{UD}\n"
+
+        screen += f"{UR}{''.join([RL for _ in range(0, Screen.width)])}{UL}\n"
 
         ## Create next_shape:
         next_shape = "\n"
         for obj_shape in queue_shape:
             for row in obj_shape.main:
-                next_shape += ' ' + ''.join(['  ' if piece == E else piece for piece in row]) + '\n'
+                next_shape += f"  {''.join(['  ' if piece == E else piece for piece in row])}\n"
             next_shape += '\n'
         
         # Create key_binds:
