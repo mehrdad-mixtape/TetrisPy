@@ -10,7 +10,7 @@
 # Tetris
 
 __repo__ = "https://github.com/mehrdad-mixtape/TetrisPy"
-__version__ = "v0.5.0"
+__version__ = "v0.5.1"
 
 from os import kill, getpid
 from random import randint
@@ -109,8 +109,7 @@ class Tetris:
                 self.level,
                 empty=True
         ) # Draw the empty screen to avoid cheating.
-        while self.state == Game_state.PAUSE:
-            sleep(1)
+        sleep(1)
 
 current_game: Tetris = None # Global access to game.
 
@@ -169,6 +168,7 @@ def event_handler() -> None:
     elif button == 'Key.down': # move down shape
         # if current_game.current_shape.x < current_game.current_shape.limit_x:
         #     current_game.current_shape.x += 1
+        play_music(10)
         current_game.delay = 0.05
 
     elif button == 'Key.left': # move left shape
@@ -213,11 +213,12 @@ def on_press(key) -> None:
             current_game.state = Game_state.PLAY
         else:
             play_music(13)
-            current_game.state = Game_state.PAUSE            
+            current_game.state = Game_state.PAUSE
 
     # Lock keyboard when game is pause.
     event_handler(current_game.state == Game_state.PAUSE)
-    current_game.update()
+    if current_game.state != Game_state.PAUSE:
+        current_game.update()
     button = ""
 
 def main() -> None:
@@ -275,7 +276,9 @@ def main() -> None:
             ## Tetris loop:
             while not tetris.screen.is_full:
                 # Handle pause state.
-                (lambda pause: tetris.pause() if pause == Game_state.PAUSE else None)(tetris.state)
+                if tetris.state == Game_state.PAUSE:
+                    tetris.pause()
+                    continue
 
                 tetris.update()
 
