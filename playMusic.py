@@ -59,7 +59,7 @@ else:
                 sys.exit()
         
     def duration_music(music_number: int) -> int:
-        with wave.open(Music.musics.get(f"{music_number}", '1')) as wf:
+        with wave.open(musics.get(f"{music_number}", '1')) as wf:
             return int(wf.getnframes() // float(wf.getframerate()))
 
     def main(argv: str):
