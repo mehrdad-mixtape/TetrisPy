@@ -1,4 +1,5 @@
 import sys, os
+from rich.console import Console
 try:
     from pyaudio import PyAudio
     import wave
@@ -35,6 +36,12 @@ def find_audios(path: str='./') -> bool:
         wav_files = os.listdir(path + 'audios/')
         for key in musics:
             if musics[key].split('/')[2] not in wav_files:
+                console = Console()
+                music_list = '\n\t'.join(m for m in musics.values())
+                console.print(f"\t[red]Audio files not found! in [yellow]./audios[/yellow][/red]")
+                console.print(f"\n\tList of Audios:\n\t{music_list}")
+                console.print(f"\n\t[green]Check the link in\n\t[yellow]./audios/Download-link-of-audios.txt[/yellow][/green]")
+                console.print(f"\n\t[green]Download all audios and copy them to\n\t[yellow]./audios[/yellow][/green]")
                 break
         else:
             return True
