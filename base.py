@@ -1,4 +1,4 @@
-from typing import Callable, List, Tuple, Any
+from typing import Callable, List, Tuple
 from rich.table import Table
 from platform import system
 from random import choice
@@ -11,8 +11,11 @@ from tetrisTypes_and_settings import *
 
 # define functions: -------------------------------------------
 def kill_process(pid: int):
-    if pid != -1:
-        kill(pid, SIGTERM)
+    try:
+        if pid != -1:
+            kill(pid, SIGTERM)
+    except ProcessLookupError:
+        pass
 
 def clear_screen(default: int=1) -> None:
     """ Four methods for clear the terminal """
@@ -42,9 +45,9 @@ def play_music(which: int) -> Tuple[int]:
     if find_audios():
         proc: Popen = None
         if system() in 'Linux Darwin':
-            proc = Popen(['./playMusic', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
+            proc = Popen(['python3', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
         elif system() == 'Windows':
-            proc = Popen(['./playMusic', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
+            proc = Popen(['python', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
         
         return (proc.pid, duration_music(which))
     else:
@@ -250,7 +253,7 @@ class Screen:
         table.add_column("[white]Next Shape[/white]", style=states.get(state, 'white'), no_wrap=True)
         table.add_row(screen, nS_Kb)
         table.add_row(f"Score: {current_score}\n{remain_score_to_next_level}", f"Level: {level.l_num + 1}\nState: {state.value}")
-        console.print('\n' * 18, table, '\n' * 2)
+        console.print('\n' * 50, table, '\n' * 10)
 
     def reset_prev_mapped(self) -> None:
         """ Reset previous shape that was mapped """
