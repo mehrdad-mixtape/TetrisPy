@@ -5,8 +5,8 @@
 
 ## Platforms:
 - Linux
-- Windows (sound effects maybe don't work)
-- Mac (sound effects maybe don't work)
+- Windows (So slow on powershell or cmd)
+- Mac (I didn't test)
 
 ## Python version:
 - 3.6 or higher
@@ -42,9 +42,10 @@ I fixed many `Critical Bugs`, But maybe ... :)
 ## TODO:
 - [x] **clean code**
 - [x] **sound effects** aren't complete
-- [ ] **shape generator** is so dumb
 - [x] **tui** is not complete
 - [x] **delay** can't change automatically
 - [x] **levels** aren't implemented
 - [x] **comments** aren't complete
+- [ ] **shape generator** is so dumb
+- [ ] **better music player**
 - ...
