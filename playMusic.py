@@ -1,11 +1,11 @@
 try:
     from pyaudio import PyAudio
-    import wave, sys
+    import wave
 except ImportError:
     pass
 else:
-    class Music:
-        musics = {
+    import sys
+    musics = {
             '1': './audios/Opening1.wav',
             '2': './audios/Opening2.wav',
             '3': './audios/Row-Clear1.wav',
@@ -27,44 +27,44 @@ else:
             '18': './audios/TypeD.wav',
             '19': './audios/TypeE.wav',
             '20': './audios/TypeF.wav',
-        }
-
+    }
+    class Music:
         def __init__(self):
             self.__chunk = 1024 # length of data to read.
             self.__audio = PyAudio() # create audio object.
 
         def play(self, music_path: str) -> None:
-            with wave.open(music_path, mode='rb') as wf:
-                # open stream based on the wave object which has been input.
-                stream = self.__audio.open(
-                    format=self.__audio.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
-                    output = True
-                )
+            try:
+                with wave.open(music_path, mode='rb') as wf:
+                    # open stream based on the wave object which has been input.
+                    stream = self.__audio.open(
+                        format=self.__audio.get_format_from_width(wf.getsampwidth()),
+                        channels=wf.getnchannels(),
+                        rate=wf.getframerate(),
+                        output = True
+                    )
 
-                # read data (based on the chunk size)
-                data = wf.readframes(self.__chunk)
-
-                # play stream (looping from beginning of file to the end)
-                while data != b'':
-                    # writing to the stream is what *actually* plays the sound.
-                    stream.write(data)
+                    # read data (based on the chunk size)
                     data = wf.readframes(self.__chunk)
 
-                # cleanup stuff.
-                stream.close()
+                    # play stream (looping from beginning of file to the end)
+                    while data != b'':
+                        # writing to the stream is what *actually* plays the sound.
+                        stream.write(data)
+                        data = wf.readframes(self.__chunk)
+
+                    # cleanup stuff.
+                    stream.close()
+            except Exception:
+                sys.exit()
         
     def duration_music(music_number: int) -> int:
         with wave.open(Music.musics.get(f"{music_number}", '1')) as wf:
             return int(wf.getnframes() // float(wf.getframerate()))
 
     def main(argv: str):
-        try:
-            music = Music()
-            music.play(Music.musics.get(argv, '1'))
-        except Exception:
-            pass
+        music = Music()
+        music.play(Music.musics.get(argv, '1'))
 
     if __name__ == '__main__':
         main(sys.argv[1])
