@@ -31,7 +31,7 @@
 
 ## Audios & Sound Effects:
  - Audios & Sound effects are *.wav files and have **large** size.
- 1. You can download the all audios & sound effect from this [link](https://drive.google.com/file/d/1QfO3Gv5QSvyZmKgrRNVax6bBWKC4jhJG/view?usp=sharing)
+ 1. You can download the all audios & sound effect from this [link](https://drive.google.com/file/d/1tUzpGsGOQtuikahW712s6u9MNznx4C2A/view?usp=sharing)
  2. Create a directory on project path with name: `audios`
  3. Extract *audios.rar* to audios.
 

@@ -5,13 +5,6 @@ try:
 except ImportError:
     sys.exit()
 
-def find_audios(path: str='./') -> bool:
-    files = os.listdir(path)
-    if 'audios' in files:
-        return True
-    else:
-        return False
-
 musics = {
         '1': './audios/Opening1.wav',
         '2': './audios/Opening2.wav',
@@ -35,6 +28,19 @@ musics = {
         '19': './audios/TypeE.wav',
         '20': './audios/TypeF.wav',
 }
+
+def find_audios(path: str='./') -> bool:
+    files = os.listdir(path)
+    if 'audios' in files:
+        wav_files = os.listdir(path + 'audios/')
+        for key in musics:
+            if musics[key].split('/')[2] not in wav_files:
+                break
+        else:
+            return True
+    else:
+        return False
+
 class Music:
     def __init__(self):
         self.__chunk = 1024 # length of data to read.
