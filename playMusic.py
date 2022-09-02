@@ -59,8 +59,11 @@ else:
                 sys.exit()
         
     def duration_music(music_number: int) -> int:
-        with wave.open(musics.get(f"{music_number}", '1')) as wf:
-            return int(wf.getnframes() // float(wf.getframerate()))
+        try:
+            with wave.open(musics.get(f"{music_number}", '1')) as wf:
+                return int(wf.getnframes() // float(wf.getframerate()))
+        except FileNotFoundError:
+            sys.exit()
 
     def main(argv: str):
         music = Music()
