@@ -516,3 +516,16 @@ LEVELS: List[Level] = [Level(n, Statics_level[n][0], Statics_level[n][1]) for n 
 Statics_level.clear()
 
 Shape = Union[Shape_L, Shape_J, Shape_I, Shape_S, Shape_Z, Shape_T, Shape_O]
+
+key_binds = """
+
+[white]Key Binds:[/white]
+[red]▲ Arrow OR T: Rotate[/red]
+[green]▼ Arrow OR G: Move Down[/green]
+[dark_orange]► Arrow OR F: Move Right[/dark_orange]
+[purple]◄ Arrow OR H: Move Left[/purple]
+[yellow]Space OR P: Pause[/yellow]
+[cyan]Shift OR M: Stop Music[/cyan]
+[blue]Alt OR N: Next Music
+          Play Music[/blue]
+"""
