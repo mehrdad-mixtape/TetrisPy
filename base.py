@@ -1,4 +1,3 @@
-from operator import index
 from typing import Callable, List, Tuple, Any
 from rich.table import Table
 from platform import system
@@ -215,9 +214,9 @@ class Screen:
             for row in self.__screen:
                 if row[0].color != BK:
                     if self.__screen.index(row) == 13:
-                        screen += f"{UD}{E}{'     #PAUSE     '}{E}{UD}\n"
+                        screen += f"{UD}  {'      PAUSE     '}  {UD}\n"
                     else:
-                        screen += f"{UD}{E * len(row)}{UD}\n"
+                        screen += f"{UD}{'  ' * len(row)}{UD}\n"
         else:
             for row in self.__screen:
                 if row[0].color != BK:
@@ -229,20 +228,12 @@ class Screen:
         next_shape = "\n"
         for obj_shape in queue_shape:
             for row in obj_shape.main:
-                next_shape += f"  {''.join(['  ' if piece == E else piece for piece in row])}\n"
+                next_shape += f"\t{''.join(['  ' if piece == E else piece for piece in row])}\n"
             next_shape += '\n'
         
         # Create key_binds:
-        key_binds = "\n\n[white]Key Binds:[/white]\n"
-        key_binds += '[red]▲ Arrow: Rotate[/red]\n'
-        key_binds += '[green]▼ Arrow: Move Down[/green]\n'
-        key_binds += '[dark_orange]► Arrow: Move Right[/dark_orange]\n'
-        key_binds += '[purple]◄ Arrow: Move Left[/purple]\n'
-        key_binds += '[yellow]Space: Pause[/yellow]\n'
-        key_binds += '[cyan]Left Shift: Stop Music[/cyan]\n'
-        key_binds += '[blue]Left Alt: Next Music\n\t  Play Music[/blue]\n'
 
-        nS_Kb = next_shape + key_binds
+        nS_Kb = f"{next_shape}{key_binds}"
 
         remain_score_to_next_level = f"Next Level After: {level.max_score - current_score}"
 
@@ -252,7 +243,7 @@ class Screen:
         table.add_column("[white]Next Shape[/white]", style=states.get(state, 'white'), no_wrap=True)
         table.add_row(screen, nS_Kb)
         table.add_row(f"Score: {current_score}\n{remain_score_to_next_level}", f"Level: {level.l_num + 1}\nState: {state.value}")
-        console.print(table)
+        console.print('\n' * 50, table, '\n' * 10)
 
     def reset_prev_mapped(self) -> None:
         """ Reset previous shape that was mapped """
