@@ -14,10 +14,21 @@ __version__ = "v0.5.1"
 
 from os import kill, getpid
 from random import randint
-from pynput import keyboard
 from signal import SIGTERM
+from parallel import make_thread
 from time import time
 from base import *
+try:
+    # Game run on GUI Terminal(pts)
+    from pynput.keyboard import Listener as Keyboard
+    pts = True
+except ImportError:
+    # Game run on TUI Terminal(tty)
+    if system() in 'Linux Darwin':
+        from captureKeyboard import KeyGetterLinux as Keyboard
+    elif system() == 'Windows':
+        from captureKeyboard import KeyGetterWindows as Keyboard
+    pts = False
 
 button = ""
 pid_of_music = None
@@ -27,16 +38,18 @@ kill_music = False
 
 class Tetris:
     """ Class of Tetris, contain important variables of game """
-    def __init__(self, screen: Screen, level: Level=LEVELS[0]):
+    def __init__(self, screen: Screen, level: Level=LEVELS[0], joystick=None):
         self._screen = screen
         self._current_shape: Shape = None
 
         self._level = level
         self._delay = self._level.delay
+        self.joystick: Keyboard = joystick
         self.score = 0
-        
         self.state: Game_state = Game_state.PLAY
         self.music = None
+
+        self.__read_input()
 
     @property    
     def current_shape(self) -> Shape:
@@ -84,7 +97,7 @@ class Tetris:
 
     def update(self) -> None:
         """ Update game, try to map shapes and draw screen of game """
-        clear_screen(default=4)
+        # clear_screen(default=4)
 
         # I Try to map the shape on screen, If couldn't, 
         # then release the shape on current loc_x & loc_y.
@@ -109,7 +122,17 @@ class Tetris:
                 self.level,
                 empty=True
         ) # Draw the empty screen to avoid cheating.
-        sleep(1)
+        while self.state == Game_state.GAME_OVER:
+            sleep(1)
+
+    @make_thread(join=False)
+    def __read_input(self) -> None:
+        """  """
+        if self.joystick is not None:
+            while True:
+                if self.joystick.kbhit():
+                    self.joystick.op_press(self.joystick.getchar(block=False))
+                sleep(0.001)
 
 current_game: Tetris = None # Global access to game.
 
@@ -118,7 +141,7 @@ def event_handler() -> None:
     """ Handle keyboard events """
     global kill_music, pid_of_music, duration_of_music, loop_of_music
 
-    if button == 'Key.up': # rotate shape
+    if button == 't' or button == 'A' or button == 'Key.up': # rotate shape
         play_music(12)
         new_shape = current_game.current_shape.rotate()
         new_limit_h, new_limit_w = len(new_shape), len(new_shape[0])
@@ -165,13 +188,13 @@ def event_handler() -> None:
             )
         current_game.update()
 
-    elif button == 'Key.down': # move down shape
+    elif button == 'g' or button == 'B' or button == 'Key.down': # move down shape
         # if current_game.current_shape.x < current_game.current_shape.limit_x:
         #     current_game.current_shape.x += 1
         play_music(10)
-        current_game.delay = 0.05
+        current_game.delay = 0.01
 
-    elif button == 'Key.left': # move left shape
+    elif button == 'f' or button == 'D' or button == 'Key.left': # move left shape
         play_music(11)
         if current_game.current_shape.y - 1 >= 0:
             if current_game.screen.map_shape(
@@ -180,7 +203,7 @@ def event_handler() -> None:
                 current_game.current_shape.y - 1    
             ): current_game.current_shape.y -= 1
 
-    elif button == 'Key.right': # move right shape
+    elif button == 'h' or button == 'C' or button == 'Key.right': # move right shape
         play_music(11)
         if current_game.current_shape.y + 1 <= current_game.current_shape.limit_y:
             if current_game.screen.map_shape(
@@ -189,26 +212,28 @@ def event_handler() -> None:
                 current_game.current_shape.y + 1
             ): current_game.current_shape.y += 1
     
-    elif button == 'Key.alt':
+    elif button == 'n' or button == 'Key.alt' or button == 'Key.alt_r':
         current_game.current_shape.music = next_music()
         if not kill_music: kill(pid_of_music, SIGTERM) # stop previous music
         pid_of_music, duration_of_music = play_music(current_game.current_shape.music) # play new music
         loop_of_music = time()
         kill_music = False
     
-    elif button == 'Key.shift':
+    elif button == 'm' or button == 'Key.shift' or button == 'Key.shift_r':
         current_game.current_shape.music = None
         if not kill_music: kill(pid_of_music, SIGTERM)
         kill_music = True
         pid_of_music = -1
         duration_of_music = -1
         loop_of_music = 0
+    
+    else: pass
 
-def on_press(key) -> None:
+def catch_input(key) -> None:
     """ Process keyboard events """
     global button, current_game
     button = f"{key}"
-    if button == 'Key.space': # Pause game
+    if button == 'p' or button == 'Key.space': # Pause game
         if current_game.state == Game_state.PAUSE:
             current_game.state = Game_state.PLAY
         else:
@@ -226,7 +251,7 @@ def main() -> None:
     global pid_of_music, duration_of_music, \
         loop_of_music, kill_music, current_game
     
-    clear_screen(default=1)
+    clear_screen()
 
     console.print(BANNER)
 
@@ -255,11 +280,12 @@ def main() -> None:
         console.print(B)
         sleep(0.5)
 
+    clear_screen()
     ## Start game:    
     with Screen() as screen:
-        with keyboard.Listener(on_press=on_press):
+        with Keyboard(on_press=catch_input) as joystick:
             ## Initialize game:
-            tetris = Tetris(screen, level=level)
+            tetris = Tetris(screen, level=level, joystick=None if pts else joystick)
             tetris.music = next_music()
 
             pid_of_music, duration_of_music = play_music(tetris.music)
@@ -290,7 +316,7 @@ def main() -> None:
                 #     # tetris.current_shape.h,
                 #     # tetris.current_shape.w
                 #     # tetris.level.delay,
-                #     # tetris.level.l_num
+                #     # tetris.level.l_num,
                 # )
 
                 sleep(tetris.delay)
