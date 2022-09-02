@@ -60,8 +60,11 @@ else:
             return int(wf.getnframes() // float(wf.getframerate()))
 
     def main(argv: str):
-        music = Music()
-        music.play(Music.musics.get(argv, '1'))
+        try:
+            music = Music()
+            music.play(Music.musics.get(argv, '1'))
+        except Exception:
+            pass
 
     if __name__ == '__main__':
         main(sys.argv[1])
