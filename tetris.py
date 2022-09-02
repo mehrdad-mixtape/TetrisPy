@@ -12,9 +12,8 @@
 __repo__ = "https://github.com/mehrdad-mixtape/TetrisPy"
 __version__ = "v0.5.3"
 
-from os import kill, getpid
+from os import getpid
 from random import randint
-from signal import SIGTERM
 from parallel import make_thread
 from time import time
 from base import *
@@ -214,14 +213,14 @@ def event_handler() -> None:
     
     elif button == 'n' or button == 'Key.alt' or button == 'Key.alt_r':
         current_game.current_shape.music = next_music()
-        if not kill_music: kill(pid_of_music, SIGTERM) # stop previous music
+        if not kill_music: kill_process(pid_of_music) # stop previous music
         pid_of_music, duration_of_music = play_music(current_game.current_shape.music) # play new music
         loop_of_music = time()
         kill_music = False
     
     elif button == 'm' or button == 'Key.shift' or button == 'Key.shift_r':
         current_game.current_shape.music = None
-        if not kill_music: kill(pid_of_music, SIGTERM)
+        if not kill_music: kill_process(pid_of_music)
         kill_music = True
         pid_of_music = -1
         duration_of_music = -1
@@ -272,7 +271,7 @@ def main() -> None:
         LEVELS.pop(0)
 
     # Kill the starter music.
-    kill(pid_of_music, SIGTERM)
+    kill_process(pid_of_music)
     print('\n\n')
 
     # Count down.
@@ -348,7 +347,7 @@ def main() -> None:
                     pid_of_music, duration_of_music = play_music(tetris.music)
                     loop_of_music = time()
 
-            if not kill_music: kill(pid_of_music, SIGTERM) # stop music.
+            if not kill_music: kill_process(pid_of_music) # stop music.
             pid_of_music, duration_of_music = play_music(8) # game over music.
             tetris.state = Game_state.GAME_OVER
             tetris.screen.draw(
@@ -363,4 +362,4 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        kill(getpid(), SIGTERM)
+        kill_process(getpid())

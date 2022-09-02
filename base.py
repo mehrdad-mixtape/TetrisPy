@@ -2,13 +2,17 @@ from typing import Callable, List, Tuple, Any
 from rich.table import Table
 from platform import system
 from random import choice
-from os import system as run
+from os import system as run, kill
+from signal import SIGTERM
 from subprocess import DEVNULL, STDOUT, Popen
 from time import sleep
-from playMusic import duration_music
+from playMusic import duration_music, find_audios
 from tetrisTypes_and_settings import *
 
 # define functions: -------------------------------------------
+def kill_process(pid: int):
+    if pid != -1:
+        kill(pid, SIGTERM)
 
 def clear_screen(default: int=1) -> None:
     """ Four methods for clear the terminal """
@@ -35,13 +39,16 @@ def random_shape() -> Shape:
 
 def play_music(which: int) -> Tuple[int]:
     """ Play musics on the background """
-    proc: Popen = None
-    if system() in 'Linux Darwin':
-        proc = Popen(['python3', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
-    elif system() == 'Windows':
-        proc = Popen(['python', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
-    
-    return (proc.pid, duration_music(which))
+    if find_audios():
+        proc: Popen = None
+        if system() in 'Linux Darwin':
+            proc = Popen(['python3', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
+        elif system() == 'Windows':
+            proc = Popen(['python', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
+        
+        return (proc.pid, duration_music(which))
+    else:
+       return (-1, -1)
 
 def next_music() -> int:
     """ Get next music number for playing """
