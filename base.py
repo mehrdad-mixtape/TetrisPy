@@ -42,9 +42,9 @@ def play_music(which: int) -> Tuple[int]:
     if find_audios():
         proc: Popen = None
         if system() in 'Linux Darwin':
-            proc = Popen(['python3', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
+            proc = Popen(['./playMusic', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
         elif system() == 'Windows':
-            proc = Popen(['python', 'playMusic.py', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
+            proc = Popen(['./playMusic', f"{which}"], stderr=STDOUT, stdout=DEVNULL)
         
         return (proc.pid, duration_music(which))
     else:
