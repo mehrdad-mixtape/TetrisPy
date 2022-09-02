@@ -64,7 +64,7 @@ else:
 
     def main(argv: str):
         music = Music()
-        music.play(Music.musics.get(argv, '1'))
+        music.play(musics.get(argv, '1'))
 
     if __name__ == '__main__':
         main(sys.argv[1])
