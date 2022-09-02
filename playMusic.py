@@ -63,8 +63,9 @@ class Music:
             stream.close()
     
 def duration_music(music_number: int) -> int:
-    with wave.open(musics.get(f"{music_number}", '1')) as wf:
-        return int(wf.getnframes() // float(wf.getframerate()))
+    if find_audios():
+        with wave.open(musics.get(f"{music_number}", '1')) as wf:
+            return int(wf.getnframes() // float(wf.getframerate()))
 
 def main(argv: str):
     music = Music()
