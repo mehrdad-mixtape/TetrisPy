@@ -252,6 +252,7 @@ def main() -> None:
     
     clear_screen()
 
+    check_terminal_size()
     console.print(BANNER)
 
     ## First screen:
@@ -280,7 +281,7 @@ def main() -> None:
         sleep(0.5)
 
     clear_screen()
-    ## Start game:    
+    ## Start game:
     with Screen() as screen:
         with Keyboard(on_press=catch_input) as joystick:
             ## Initialize game:
@@ -301,6 +302,7 @@ def main() -> None:
             ## Tetris loop:
             while not tetris.screen.is_full:
                 # Handle pause state.
+                check_terminal_size()
                 if tetris.state == Game_state.PAUSE:
                     tetris.pause()
                     continue
