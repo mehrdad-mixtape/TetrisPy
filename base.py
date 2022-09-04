@@ -2,7 +2,7 @@ from typing import Callable, List, Tuple
 from rich.table import Table
 from platform import system
 from random import choice
-from os import system as run, kill
+from os import system as run, kill, get_terminal_size
 from signal import SIGTERM
 from subprocess import DEVNULL, STDOUT, Popen
 from time import sleep
@@ -66,6 +66,11 @@ def keyboard_lock(func: Callable) -> Callable:
             func()
     return __decorator__
 
+def check_terminal_size() -> None:
+    while get_terminal_size().columns < 55 or get_terminal_size().lines < 30:
+        console.print("\n\t[red]Terminal is too small![/red]")
+        sleep(1)
+        clear_screen()
 # define classes: -------------------------------------------
 
 class Screen:
@@ -253,7 +258,7 @@ class Screen:
         table.add_column("[white]Next Shape[/white]", style=states.get(state, 'white'), no_wrap=True)
         table.add_row(screen, nS_Kb)
         table.add_row(f"Score: {current_score}\n{remain_score_to_next_level}", f"Level: {level.l_num + 1}\nState: {state.value}")
-        console.print('\n' * 50, table, '\n' * 10)
+        console.print('\n' * 50, table)
 
     def reset_prev_mapped(self) -> None:
         """ Reset previous shape that was mapped """
