@@ -29,8 +29,8 @@ MIN_RANDOM_Y_LOC = 1
 
 DEFAULT_X_LOC = 0
 
-SCORE_FOR_EACH_ROW = 300
-SCORE_FOR_EACH_SHAPE = 100
+SCORE_FOR_EACH_ROW = 240
+SCORE_FOR_EACH_SHAPE = 50
 
 console = Console()
 
@@ -53,46 +53,46 @@ BANNER = f"""
      █▒▒▒▒▒ Dev By mehrdad-mixtape ▒▒▒▒▒█
      ████████████████████████████████████
 
-  {BO}     {BY}{BY}   {BR}{BR}      {BB}   {BC}    {BG}{BG}  {BP}
+  [blink]{BO}     {BY}{BY}   {BR}{BR}      {BB}   {BC}    {BG}{BG}  {BP}
   {BO}     {BY}{BY}     {BR}{BR}    {BB}   {BC}  {BG}{BG}    {BP}{BP}
   {BO}{BO}                  {BB}{BB}   {BC}          {BP}
-                               {BC}
+                               {BC}[/blink]
 
         [white]Welcome to Tetris[/white]
         [red]Levels[/red]: 1 2 3 4 5 6 7 8 9 10
 """
 
-THREE = f"""
-            {BG}{BG}{BG}
-                {BG}
-            {BG}{BG}{BG}
-                {BG}
-            {BG}{BG}{BG}
-"""
+THREE = """
+            {}{}{}
+                {}
+            {}{}{}
+                {}
+            {}{}{}
+""".format(*(BG for _  in range(11)))
 
-TWO = f"""
-            {BY}{BY}{BY}
-                {BY}
-            {BY}{BY}{BY}
-            {BY}
-            {BY}{BY}{BY}
-"""
+TWO = """
+            {}{}{}
+                {}
+            {}{}{}
+            {}
+            {}{}{}
+""".format(*(BY for _  in range(11)))
 
-ONE = f"""
-            {BR}{BR}
-              {BR}
-              {BR}
-              {BR}
-            {BR}{BR}{BR}
-"""
+ONE = """
+            {}{}
+              {}
+              {}
+              {}
+            {}{}{}
+""".format(*(BR for _  in range(8)))
 
-GO = f"""
-        {BW}{BW}{BW}{BW} {BW}{BW}{BW}{BW}
-        {BW}       {BW}    {BW}
-        {BW}  {BW}{BW} {BW}    {BW}
-        {BW}    {BW} {BW}    {BW}
-        {BW}{BW}{BW}{BW} {BW}{BW}{BW}{BW}
-"""
+GO = """
+        {}{}{}{} {}{}{}{}
+        {}       {}    {}
+        {}  {}{} {}    {}
+        {}    {} {}    {}
+        {}{}{}{} {}{}{}{}
+""".format(*(BW for _  in range(28)))
 
 class Game_state(Enum):
     GAME_OVER = 'Game Over'
@@ -518,7 +518,6 @@ Statics_level.clear()
 Shape = Union[Shape_L, Shape_J, Shape_I, Shape_S, Shape_Z, Shape_T, Shape_O]
 
 key_binds = """
-
 [white]Key Binds:[/white]
 [red]▲ Arrow OR T: Rotate[/red]
 [green]▼ Arrow OR G: Move Down[/green]
@@ -527,5 +526,4 @@ key_binds = """
 [yellow]Space OR P: Pause[/yellow]
 [cyan]Shift OR M: Stop Music[/cyan]
 [blue]Alt OR N: Next Music
-          Play Music[/blue]
-"""
+          Play Music[/blue]"""
