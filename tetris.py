@@ -10,7 +10,7 @@
 # Tetris
 
 __repo__ = "https://github.com/mehrdad-mixtape/TetrisPy"
-__version__ = "v0.5.5"
+__version__ = "v0.6.5"
 
 from os import getpid
 from random import randint
