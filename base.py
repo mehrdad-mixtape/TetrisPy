@@ -163,7 +163,7 @@ class Screen:
         if counter == Screen.height:
             self._is_full = True
 
-    def calc_score(self) -> int:
+    def calc_score(self) -> Tuple[int]:
         """ Find rows that were filled with block """
         score_flag = False
         index_of_rows = []
@@ -197,7 +197,7 @@ class Screen:
                 self.__screen.insert(4, row) # Skip hidden rows and insert new row of blocks.
                 score += SCORE_FOR_EACH_ROW * xp
             sleep(0.2)
-        return score
+        return score, num_of_rows
 
     def dead(self, *game_arg) -> None:
         """ Funny demo after game over """
@@ -207,15 +207,15 @@ class Screen:
                 if block.color == BK:
                     continue
                 block.color = BW
-            clear_screen(default=4)
             self.draw(
                 current_score=game_arg[0],
-                state=game_arg[1],
-                level=game_arg[2]
+                current_line=game_arg[1],
+                state=game_arg[2],
+                level=game_arg[3]
             )
             sleep(0.2)
 
-    def draw(self, current_score: int=0, state: Game_state=Game_state.PLAY, level: Level=LEVELS[0], empty: bool=False) -> str:
+    def draw(self, current_score: int=0, current_line: int=0, state: Game_state=Game_state.PLAY, level: Level=LEVELS[0], empty: bool=False) -> str:
         """ Draw screen """
         states = {
             Game_state.PLAY: 'green',
@@ -223,41 +223,44 @@ class Screen:
             Game_state.GAME_OVER: 'red',
         }
         ## Create screen:
-        screen = ""
-        screen += f"{DR}{''.join([RL for _ in range(0, Screen.width)])}{DL}\n"
+        screen = []
+        screen.append(f"{DR}{''.join((RL for _ in range(0, Screen.width)))}{DL}\n")
         if empty:
             for row in self.__screen:
                 if row[0].color != BK:
                     if self.__screen.index(row) == 13:
-                        screen += f"{UD}  {'      PAUSE     '}  {UD}\n"
+                        screen.append(f"{UD}  {'[blink]      PAUSE     [/blink]'}  {UD}\n")
                     else:
-                        screen += f"{UD}{'  ' * len(row)}{UD}\n"
+                        screen.append(f"{UD}{'  ' * len(row)}{UD}\n")
         else:
             for row in self.__screen:
                 if row[0].color != BK:
-                    screen += f"{UD}{''.join(block.color for block in row)}{UD}\n"
+                    screen.append(f"{UD}{''.join(block.color for block in row)}{UD}\n")
 
-        screen += f"{UR}{''.join([RL for _ in range(0, Screen.width)])}{UL}\n"
+        screen.append(f"{UR}{''.join((RL for _ in range(0, Screen.width)))}{UL}\n")
 
         ## Create next_shape:
-        next_shape = "\n"
+        next_shape = ['\n']
         for obj_shape in queue_shape:
             for row in obj_shape.main:
-                next_shape += f"\t{''.join(['  ' if piece == E else piece for piece in row])}\n"
-            next_shape += '\n'
+                next_shape.append(f"\t{''.join(('  ' if piece == E else piece for piece in row))}\n")
+            next_shape.append('\n')
         
         # Create key_binds:
 
-        nS_Kb = f"{next_shape}{key_binds}"
+        nS_Kb = f"{''.join(next_shape)}{key_binds}"
 
-        remain_score_to_next_level = f"Next Level After: {level.max_score - current_score}"
+        remain_score_to_next_level = f"Next Level After: {level.max_score - current_score}".zfill(6)
 
         ## Create table:
         table = Table()
         table.add_column("[white]TETRIS[/white]", style="cyan", no_wrap=True, justify='center')
         table.add_column("[white]Next Shape[/white]", style=states.get(state, 'white'), no_wrap=True)
-        table.add_row(screen, nS_Kb)
-        table.add_row(f"Score: {current_score}\n{remain_score_to_next_level}", f"Level: {level.l_num + 1}\nState: {state.value}")
+        table.add_row(''.join(screen), nS_Kb)
+        table.add_row(
+            f"\nScore: {current_score}\n{remain_score_to_next_level}".zfill(6),
+            f"Level: {level.l_num + 1}\nLines: {current_line}\nState: {state.value}"
+        )
         console.print('\n' * 50, table)
 
     def reset_prev_mapped(self) -> None:
