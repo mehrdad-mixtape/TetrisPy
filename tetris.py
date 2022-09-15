@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/bin/python3
 # -*- coding: utf8 -*-
 
 #   GPLv3 License
@@ -45,6 +45,7 @@ class Tetris:
         self._delay = self._level.delay
         self.joystick: Keyboard = joystick
         self.score = 0
+        self.line = 0
         self.state: Game_state = Game_state.PLAY
         self.music = None
 
@@ -109,6 +110,7 @@ class Tetris:
         # Draw the screen of game.
         self.screen.draw(
             current_score=self.score,
+            current_line=self.line,
             state=self.state,
             level=self.level
         )
@@ -117,11 +119,12 @@ class Tetris:
         """ Pause game """
         self.screen.draw(
                 self.score,
+                self.line,
                 self.state,
                 self.level,
                 empty=True
         ) # Draw the empty screen to avoid cheating.
-        while self.state == Game_state.GAME_OVER:
+        while self.state == Game_state.PAUSE:
             sleep(1)
 
     @make_thread(join=False)
@@ -301,11 +304,10 @@ def main() -> None:
 
             ## Tetris loop:
             while not tetris.screen.is_full:
-                # Handle pause state.
                 check_terminal_size()
+                # Handle pause state.
                 if tetris.state == Game_state.PAUSE:
                     tetris.pause()
-                    continue
 
                 tetris.update()
 
@@ -329,7 +331,9 @@ def main() -> None:
                 else:
                     play_music(9)
                     tetris.delay = tetris.level.delay # If delay was changed, should be set again.
-                    tetris.score += tetris.screen.calc_score()
+                    temp_score, temp_line = tetris.screen.calc_score()
+                    tetris.score += temp_score
+                    tetris.line += temp_line
                     tetris.score += SCORE_FOR_EACH_SHAPE
                     tetris.check() # Check current state, score, level.
                     if tetris.state == Game_state.GAME_OVER:
@@ -358,7 +362,7 @@ def main() -> None:
                 level=tetris.level
             )
             sleep(duration_of_music)
-            tetris.screen.dead(tetris.score, tetris.state, tetris.level)
+            tetris.screen.dead(tetris.score, tetris.line, tetris.state, tetris.level)
 
 if __name__ == '__main__':
     try:
