@@ -153,8 +153,8 @@ def event_handler() -> None:
         temp_x = new_limit_h + current_game.current_shape.x
         temp_y = new_limit_w + current_game.current_shape.y
 
-        ## Check button and right side of screen:
-        # 1. if I close to button and rotate my shape, I must change my x loc.
+        ## Check bottom and right side of screen:
+        # 1. if I close to bottom and rotate my shape, I must change my x loc.
         if temp_x >= current_game.current_shape.limit_x:
             current_game.current_shape.x = temp_x - new_limit_h - 1
 
@@ -169,7 +169,7 @@ def event_handler() -> None:
             current_game.current_shape.y = new_limit_y - 2
 
         ## Check the location of new_shape that wanna map on screen.
-        ## When shape close to walls or button or other location on screen.
+        ## When shape close to walls or bottom or other location on screen.
         if current_game.screen.map_shape(
             new_shape,
             current_game.current_shape.x,

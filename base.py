@@ -136,7 +136,7 @@ class Screen:
                         continue
 
     def __shape_check_around(self, shape: Tuple[Tuple[str]], loc_x: int, loc_y: int) -> bool:
-        """ Check around of shape that wanna close to other shapes or walls or button """
+        """ Check around of shape that wanna close to other shapes or walls or bottom """
         flag = True
         for i, row in enumerate(shape):
             for j, col in enumerate(row):
