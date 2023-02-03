@@ -10,11 +10,11 @@
 # Tetris
 
 __repo__ = "https://github.com/mehrdad-mixtape/TetrisPy"
-__version__ = "v0.6.5"
+__version__ = "v0.6.9"
 
 from os import getpid
 from random import randint
-from parallel import make_thread
+from parallel import threader
 from time import time
 from base import *
 try:
@@ -29,6 +29,7 @@ except ImportError:
         from captureKeyboard import KeyGetterWindows as Keyboard
     pts = False
 
+# Global variables: -----------------------------------------------------------
 button = ""
 pid_of_music = None
 duration_of_music = None
@@ -36,7 +37,7 @@ loop_of_music = 0
 kill_music = False
 
 class Tetris:
-    """ Class of Tetris, contain important variables of game """
+    """ Class of Tetris, Include important variables of game """
     def __init__(self, screen: Screen, level: Level=LEVELS[0], joystick=None):
         self._screen = screen
         self._current_shape: Shape = None
@@ -97,9 +98,7 @@ class Tetris:
 
     def update(self) -> None:
         """ Update game, try to map shapes and draw screen of game """
-        # clear_screen(default=4)
-
-        # I Try to map the shape on screen, If couldn't, 
+        # I Try to map the shape on screen, If I couldn't, 
         # then release the shape on current loc_x & loc_y.
         if not self.screen.map_shape(
             self.current_shape.current,
@@ -118,18 +117,18 @@ class Tetris:
     def pause(self) -> None:
         """ Pause game """
         self.screen.draw(
-                self.score,
-                self.line,
-                self.state,
-                self.level,
-                empty=True
+            self.score,
+            self.line,
+            self.state,
+            self.level,
+            empty=True
         ) # Draw the empty screen to avoid cheating.
         while self.state == Game_state.PAUSE:
             sleep(1)
 
-    @make_thread(join=False)
+    @threader(join=False)
     def __read_input(self) -> None:
-        """  """
+        """ read keyboard inputs """
         if self.joystick is not None:
             while True:
                 if self.joystick.kbhit():
@@ -191,8 +190,6 @@ def event_handler() -> None:
         current_game.update()
 
     elif button == 'g' or button == 'B' or button == 'Key.down': # move down shape
-        # if current_game.current_shape.x < current_game.current_shape.limit_x:
-        #     current_game.current_shape.x += 1
         play_music(10)
         current_game.delay = 0.01
 
@@ -256,7 +253,7 @@ def main() -> None:
     clear_screen()
 
     check_terminal_size()
-    console.print(BANNER)
+    pprint(BANNER)
 
     ## First screen:
     # Play starter music.
@@ -280,7 +277,7 @@ def main() -> None:
 
     # Count down.
     for B in (THREE, TWO, ONE, GO):
-        console.print(B)
+        pprint(B)
         sleep(0.5)
 
     clear_screen()
@@ -305,59 +302,61 @@ def main() -> None:
             ## Tetris loop:
             while not tetris.screen.is_full:
                 check_terminal_size()
+
                 # Handle pause state.
                 if tetris.state == Game_state.PAUSE:
                     tetris.pause()
 
-                tetris.update()
-
-                # print( # debug
-                #     # tetris.current_shape.limit_x,
-                #     # tetris.current_shape.x,
-                #     # tetris.current_shape.limit_y,
-                #     # tetris.current_shape.y,
-                #     # tetris.current_shape.h,
-                #     # tetris.current_shape.w
-                #     # tetris.level.delay,
-                #     # tetris.level.l_num,
-                # )
-
-                sleep(tetris.delay)
-
-                # Current shape goes down on screen.
-                if tetris.current_shape.x < tetris.current_shape.limit_x:
-                    tetris.current_shape.x += 1
-                # Current shape mapped on screen successfully.
-                else:
-                    play_music(9)
-                    tetris.delay = tetris.level.delay # If delay was changed, should be set again.
-                    temp_score, temp_line = tetris.screen.calc_score()
-                    tetris.score += temp_score
-                    tetris.line += temp_line
-                    tetris.score += SCORE_FOR_EACH_SHAPE
-                    tetris.check() # Check current state, score, level.
-                    if tetris.state == Game_state.GAME_OVER:
+                elif tetris.state == Game_state.GAME_OVER:
                         break
 
-                    tetris.current_shape = random_shape() # Get new random shape.
+                elif tetris.state == Game_state.PLAY:
 
-                    # Set new location for new shape.
-                    tetris.current_shape.x = DEFAULT_X_LOC
-                    tetris.current_shape.y = randint(MIN_RANDOM_Y_LOC, tetris.current_shape.limit_y - MIN_RANDOM_Y_LOC)
+                    # Update the game.
+                    tetris.update()
 
-                    # Reset the previous shape that was mapped on screen.
-                    tetris.screen.reset_prev_mapped()
+                    # Delay of Loop.
+                    sleep(tetris.delay) 
 
-                if time() - loop_of_music >= duration_of_music and not kill_music: # play next music.
-                    tetris.music = next_music()
-                    pid_of_music, duration_of_music = play_music(tetris.music)
-                    loop_of_music = time()
+                    # play next music.
+                    if time() - loop_of_music >= duration_of_music and not kill_music:
+                        tetris.music = next_music()
+                        pid_of_music, duration_of_music = play_music(tetris.music)
+                        loop_of_music = time()
 
+                    # Current shape goes down on screen.
+                    if tetris.current_shape.x < tetris.current_shape.limit_x:
+                        tetris.current_shape.x += 1
+
+                    # Current shape mapped on screen successfully.
+                    else:
+                        play_music(9)
+                        tetris.delay = tetris.level.delay # If delay was changed, should be set again.
+                        score, line = tetris.screen.calc_score()
+                        tetris.score += score
+                        tetris.score += SCORE_FOR_EACH_SHAPE
+                        tetris.line += line
+
+                        # Check current state, score, level.
+                        tetris.check()
+
+                        # Get new random shape.
+                        tetris.current_shape = random_shape() 
+
+                        # Set new location for new shape.
+                        tetris.current_shape.x = DEFAULT_X_LOC
+                        tetris.current_shape.y = randint(MIN_RANDOM_Y_LOC, tetris.current_shape.limit_y - MIN_RANDOM_Y_LOC)
+
+                        # Reset the previous shape that was mapped on screen.
+                        tetris.screen.reset_prev_mapped()
+
+            # Game over.
             if not kill_music: kill_process(pid_of_music) # stop music.
             pid_of_music, duration_of_music = play_music(8) # game over music.
             tetris.state = Game_state.GAME_OVER
             tetris.screen.draw(
                 current_score=tetris.score,
+                current_line=tetris.line,
                 state=tetris.state,
                 level=tetris.level
             )
