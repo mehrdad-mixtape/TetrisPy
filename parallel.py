@@ -1,9 +1,9 @@
 from threading import Thread
-from typing import List, Callable, Any
+from typing import List, Callable
 
 threads: List[Thread] = []
 
-def make_thread(join: bool=True) -> Callable:
+def threader(join: bool=True) -> Callable:
     def __decorator__(func: Callable) -> Callable:
         def __wrapper__(*args, **kwargs) -> None:
             daemon: Callable = lambda: True if not join else False
