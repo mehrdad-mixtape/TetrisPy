@@ -10,26 +10,26 @@ from playMusic import duration_music, find_audios
 from tetrisTypes_and_settings import *
 
 # define functions: -------------------------------------------
+pprint = lambda *args: console.print(*args)
+
 def kill_process(pid: int):
     try:
-        if pid != -1:
-            kill(pid, SIGTERM)
-    except ProcessLookupError:
-        pass
+        if pid != -1: kill(pid, SIGTERM)
+    except ProcessLookupError: pass
 
-def clear_screen(default: int=1) -> None:
+def clear_screen(method: int=1) -> None:
     """ Four methods for clear the terminal """
-    if default == 1:
+    if method == 1:
         if system() in 'Linux Darwin': run('clear')
         elif system() == 'Windows': run('cls')
-    elif default == 2:
+    elif method == 2:
         print("\033[2J")
-    elif default == 3:
+    elif method == 3:
         console.clear()
-    elif default == 4:
+    elif method == 4:
         Popen(['./tools/clear_screen'])
     else:
-        raise ValueError('default = 1 or 2 or 3 or 4')
+        raise ValueError('method = 1 or 2 or 3 or 4')
 
 def random_shape() -> Shape:
     """ Get random shape from queue """
@@ -60,19 +60,20 @@ def next_music() -> int:
 def keyboard_lock(func: Callable) -> Callable:
     """ Lock keyboard events """
     def __decorator__(lock: bool) -> None:
-        if lock:
-            lambda: None
-        else:
-            func()
+        if lock: lambda: None
+        else: func()
     return __decorator__
 
 def check_terminal_size() -> None:
-    while get_terminal_size().columns < 55 or get_terminal_size().lines < 30:
-        console.print("\n\t[red]Terminal is too small![/red]")
+    while (
+        get_terminal_size().columns < 55
+        or get_terminal_size().lines < 30
+    ):
+        pprint("\n\t[red]Terminal is too small![/red]")
         sleep(1)
         clear_screen()
-# define classes: -------------------------------------------
 
+# define classes: -------------------------------------------
 class Screen:
     """ Screen of Tetris """
     width = 10 # 10 Columns are visible.
@@ -82,14 +83,16 @@ class Screen:
         self.__prev_loc_x = 0 # Previous x location of shape on screen.
         self.__prev_loc_y = 0 # Previous y location of shape on screen.
         self.__prev_mapped: Tuple[Tuple[str]] = () # Previous shape that mapped on screen.
-        self.__screen: List[List[Block]] = [ # Append 20 Rows on screen that wanna be visible.
-            [Block() for _ in range(0, Screen.width)] for _ in range(0, Screen.height - 4)
-        ]
-        for _ in range(0, 4): # Insert 4 Rows on index=0 that wanna be hidden.
-            self.__screen.insert(0, [Block(color=BK) for _ in range(0, Screen.width)])
-        self._is_full = False
+        self.__screen: List[List[Block]] = None
+        self._is_full: bool = None  
 
     def __enter__(self):
+        self.__screen = [ # Append 20 Rows on screen that will be visible.
+            [Block() for _ in range(0, Screen.width)] for _ in range(0, Screen.height - 4)
+        ]
+        for _ in range(0, 4): # Insert 4 Rows on index=0 that will be hidden.
+            self.__screen.insert(0, [Block(color=BK) for _ in range(0, Screen.width)])
+        self._is_full = NO
         return self
     
     def __exit__(self, *_):
@@ -137,23 +140,18 @@ class Screen:
 
     def __shape_check_around(self, shape: Tuple[Tuple[str]], loc_x: int, loc_y: int) -> bool:
         """ Check around of shape that wanna close to other shapes or walls or bottom """
-        flag = True
         for i, row in enumerate(shape):
             for j, col in enumerate(row):
                 if col == E: continue
                 else:
                     try:
                         # Other shapes maybe fill loc_x + i and loc_y + j
-                        if self.__screen[loc_x + i][loc_y + j].fill:
-                            flag = False
-                            break
-                    except IndexError:
-                        flag = False
-                        break
-        return flag
+                        if self.__screen[loc_x + i][loc_y + j].fill: return False
+                    except IndexError: return False
+        return True
 
     def __check_screen_is_full(self) -> None:
-        """ Check Screen, if this was full, game is over! """
+        """ Check Screen, if screen was full of shapes, game is over! """
         counter = 0
         for row in self.__screen:
             for col in row:
@@ -161,7 +159,7 @@ class Screen:
                     counter += 1
                     break
         if counter == Screen.height:
-            self._is_full = True
+            self._is_full = YES
 
     def calc_score(self) -> Tuple[int]:
         """ Find rows that were filled with block """
@@ -173,7 +171,7 @@ class Screen:
         for row in self.__screen:
             if row[0].color == BK: continue
             for block in row:
-                score_flag = (lambda block: True if block.fill else False)(block)
+                score_flag = YES if block.fill else NO
                 if not score_flag: break
             if score_flag:
                 index_of_rows.append(self.__screen.index(row))
@@ -197,7 +195,7 @@ class Screen:
                 self.__screen.insert(4, row) # Skip hidden rows and insert new row of blocks.
                 score += SCORE_FOR_EACH_ROW * xp
             sleep(0.2)
-        return score, num_of_rows
+        return (score, num_of_rows)
 
     def dead(self, *game_arg) -> None:
         """ Funny demo after game over """
@@ -215,14 +213,15 @@ class Screen:
             )
             sleep(0.2)
 
-    def draw(self, current_score: int=0, current_line: int=0, state: Game_state=Game_state.PLAY, level: Level=LEVELS[0], empty: bool=False) -> str:
+    def draw(self,
+        current_score: int=0,
+        current_line: int=0,
+        state: Game_state=Game_state.PLAY,
+        level: Level=LEVELS[0],
+        empty: bool=NO
+    ) -> str:
         """ Draw screen """
-        states = {
-            Game_state.PLAY: 'green',
-            Game_state.PAUSE: 'yellow',
-            Game_state.GAME_OVER: 'red',
-        }
-        ## Create screen:
+        ## draw screen:
         screen = []
         screen.append(f"{DR}{''.join((RL for _ in range(0, Screen.width)))}{DL}\n")
         if empty:
@@ -239,29 +238,28 @@ class Screen:
 
         screen.append(f"{UR}{''.join((RL for _ in range(0, Screen.width)))}{UL}\n")
 
-        ## Create next_shape:
+        ## draw next_shape:
         next_shape = ['\n']
         for obj_shape in queue_shape:
             for row in obj_shape.main:
                 next_shape.append(f"\t{''.join(('  ' if piece == E else piece for piece in row))}\n")
             next_shape.append('\n')
         
-        # Create key_binds:
-
+        # draw key_binds:
         nS_Kb = f"{''.join(next_shape)}{key_binds}"
-
         remain_score_to_next_level = f"Next Level After: {level.max_score - current_score}".zfill(6)
 
-        ## Create table:
+        ## draw table:
         table = Table()
-        table.add_column("[white]TETRIS[/white]", style="cyan", no_wrap=True, justify='center')
-        table.add_column("[white]Next Shape[/white]", style=states.get(state, 'white'), no_wrap=True)
+        table.add_column("[white]TETRIS[/white]", style="cyan", no_wrap=YES, justify='center')
+        table.add_column("[white]Next Shape[/white]", style=STATES_COLOR.get(state, 'white'), no_wrap=YES)
         table.add_row(''.join(screen), nS_Kb)
         table.add_row(
             f"\nScore: {current_score}\n{remain_score_to_next_level}".zfill(6),
             f"Level: {level.l_num + 1}\nLines: {current_line}\nState: {state.value}"
         )
-        console.print('\n' * 50, table)
+        pprint('\n' * 50, table)
+        # pprint(table)
 
     def reset_prev_mapped(self) -> None:
         """ Reset previous shape that was mapped """
