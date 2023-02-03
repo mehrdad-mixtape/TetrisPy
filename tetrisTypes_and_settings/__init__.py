@@ -22,8 +22,9 @@ BP = f"[purple]{F}[/purple]"
 BO = f"[dark_orange]{F}[/dark_orange]"
 BK = f"[black]{F}[/black]"
 
-R = True
-L = False
+YES = R = True
+NO = L = False
+
 
 MIN_RANDOM_Y_LOC = 1
 
@@ -227,7 +228,6 @@ class Shape_L(Base_shape):
                 self._shape_04,
             )
         )
-        self._weight = 5
 
     def __str__(self):
         return """
@@ -239,10 +239,6 @@ class Shape_L(Base_shape):
         ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
         """
 
-    @property
-    def weight(self) -> int:
-        return self._weight
-    
     @property
     def main(self) -> Tuple[Tuple[str]]:
         return self._shape_01
@@ -277,7 +273,6 @@ class Shape_J(Base_shape):
                 self._shape_14,
             )
         )
-        self._weight = 5
 
     def __str__(self):
         return """
@@ -289,10 +284,6 @@ class Shape_J(Base_shape):
         ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
         """
 
-    @property
-    def weight(self):
-        return self._weight
-    
     @property
     def main(self) -> Tuple[Tuple[str]]:
         return self._shape_11
@@ -316,7 +307,6 @@ class Shape_I(Base_shape):
                 self._shape_22,
             )
         )
-        self._weight = 7
 
     def __str__(self):
         return """
@@ -329,10 +319,6 @@ class Shape_I(Base_shape):
         ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
         """
 
-    @property
-    def weight(self):
-        return self._weight
-    
     @property
     def main(self) -> Tuple[Tuple[str]]:
         return self._shape_22
@@ -356,7 +342,6 @@ class Shape_S(Base_shape):
                 self._shape_32,
             )
         )
-        self._weight = 3
 
     def __str__(self):
         return """
@@ -367,10 +352,6 @@ class Shape_S(Base_shape):
         ▒▒▒▒██▒▒▒▒▒▒▒▒▒▒
         ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
         """
-    
-    @property
-    def weight(self):
-        return self._weight
     
     @property
     def main(self) -> Tuple[Tuple[str]]:
@@ -395,7 +376,6 @@ class Shape_Z(Base_shape):
                 self._shape_42,
             )
         )
-        self._weight = 3
 
     def __str__(self):
         return """
@@ -406,10 +386,6 @@ class Shape_Z(Base_shape):
         ▒▒██▒▒▒▒▒▒▒▒▒▒▒▒
         ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
         """
-    
-    @property
-    def weight(self):
-        return self._weight
     
     @property
     def main(self) -> Tuple[Tuple[str]]:
@@ -445,7 +421,6 @@ class Shape_T(Base_shape):
                 self._shape_54,
             )
         )
-        self._weight = 4
 
     def __str__(self):
         return """
@@ -456,10 +431,6 @@ class Shape_T(Base_shape):
         ▒▒▒▒▒▒▒▒▒▒██▒▒▒▒▒▒▒▒▒▒▒▒▒▒██▒▒
         ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
         """
-    
-    @property
-    def weight(self):
-        return self._weight
     
     @property
     def main(self) -> Tuple[Tuple[str]]:
@@ -478,7 +449,6 @@ class Shape_O(Base_shape):
                 self._shape_61,
             )
         )
-        self._weight = 6
 
     def __str__(self):
         return """
@@ -490,16 +460,15 @@ class Shape_O(Base_shape):
         """
     
     @property
-    def weight(self):
-        return self._weight
-    
-    @property
     def main(self) -> Tuple[Tuple[str]]:
         return self._shape_61
 
-ALL_SHAPES = [eval(f"Shape_{char}()") for char in "LJISZTO"]
+Shape = Union[Shape_L, Shape_J, Shape_I, Shape_S, Shape_Z, Shape_T, Shape_O]
 
-Statics_level: Dict[int, Tuple[float, int]] = { # level_number: (delay, max_score)
+ALL_SHAPES: List[Shape] = [eval(f"Shape_{char}()") for char in "LJISZTO"]
+
+Statics_level: Dict[int, Tuple[float, int]] = {
+    # level_number: (delay, max_score)
     0: (0.50, 5000),
     1: (0.45, 10000),
     2: (0.40, 20000),
@@ -515,7 +484,12 @@ Statics_level: Dict[int, Tuple[float, int]] = { # level_number: (delay, max_scor
 LEVELS: List[Level] = [Level(n, Statics_level[n][0], Statics_level[n][1]) for n in range(0, 10)]
 Statics_level.clear()
 
-Shape = Union[Shape_L, Shape_J, Shape_I, Shape_S, Shape_Z, Shape_T, Shape_O]
+STATES_COLOR: Dict[Game_state, str] = {
+    Game_state.PLAY: 'green',
+    Game_state.PAUSE: 'yellow',
+    Game_state.GAME_OVER: 'red',
+}
+
 
 key_binds = """
 [white]Key Binds:[/white]
