@@ -3,9 +3,7 @@
 
 # Based on the answer by:
 # @enrico.bacis in http://stackoverflow.com/a/13207724/4398908
-
 # And
-
 # @Phylliida in http://stackoverflow.com/a/31736883/4398908
 
 # Import modules:
