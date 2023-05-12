@@ -17,7 +17,7 @@ def kill_process(pid: int):
         if pid != -1: kill(pid, SIGTERM)
     except ProcessLookupError: pass
 
-def clear_screen(method: int=1) -> None:
+def clear_screen(method: int=2) -> None:
     """ Four methods for clear the terminal """
     if method == 1:
         if system() in 'Linux Darwin': run('clear')
@@ -258,7 +258,7 @@ class Screen:
             f"\nScore: {current_score}\n{remain_score_to_next_level}".zfill(6),
             f"Level: {level.l_num + 1}\nLines: {current_line}\nState: {state.value}"
         )
-        pprint('\n' * 50, table)
+        pprint('\n' * 20, table)
         # pprint(table)
 
     def reset_prev_mapped(self) -> None:
