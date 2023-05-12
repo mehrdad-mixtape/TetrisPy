@@ -191,7 +191,7 @@ def event_handler() -> None:
 
     elif button == 'g' or button == 'B' or button == 'Key.down': # move down shape
         play_music(10)
-        current_game.delay = 0.01
+        current_game.delay = 0.06
 
     elif button == 'f' or button == 'D' or button == 'Key.left': # move left shape
         play_music(11)
